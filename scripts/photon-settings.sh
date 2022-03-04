@@ -30,6 +30,7 @@ tdnf install -y \
   unzip \
   awk \
   tar \
+  docker-19.03.10-3.ph4 \
   kubernetes-kubeadm-1.19.7-1.ph4
 
 echo '> Done'

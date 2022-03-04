@@ -20,7 +20,7 @@
     "ovftool_deploy_vm_vcenter_username": "administrator@vsphere.local",
     "ovftool_deploy_vm_vcenter_password": "VMware1!",
     "ovftool_deploy_vm_network": "OL_SEG_10",
-    "ovftool_deploy_vm_datastore": "Datastore",
+    "ovftool_deploy_vm_datastore": "DS2"
   },
   "builders": [
     {
@@ -87,7 +87,14 @@
       "type": "file",
       "source": "files/setup.sh",
       "destination": "/root/setup.sh"
-    }
+    },
+    {
+      "type": "file",
+      "source": "files/daemon.json",
+      "destination": "/etc/docker/daemon.json"
+    },
+
+
   ],
   "post-processors": [
     {
