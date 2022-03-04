@@ -92,9 +92,7 @@
       "type": "file",
       "source": "files/daemon.json",
       "destination": "/etc/docker/daemon.json"
-    },
-
-
+    }
   ],
   "post-processors": [
     {
