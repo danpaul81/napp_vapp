@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vmw="http://www.vmware.com/schema/ovf" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">
+  <References>
+    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file1" ovf:size="{{DISKSIZE}}"/>
+    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file2" ovf:size="{{DISKSIZE}}"/>
+  </References>
+  <DiskSection>
+    <Info>List of the virtual disks</Info>
+    <Disk ovf:capacityAllocationUnits="byte" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk1" ovf:capacity="4194304000" ovf:fileRef="file1"/>
+    <Disk ovf:capacityAllocationUnits="byte" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk2" ovf:capacity="4194304000" ovf:fileRef="file2"/>
+  </DiskSection>
+  <NetworkSection>
+    <Info>The list of logical networks</Info>
+    <Network ovf:name="{{NETWORK}}">
+      <Description>The VM network</Description>
+    </Network>
+  </NetworkSection>
+  <vmw:IpAssignmentSection>
+    <Info>Supported IP assignment schemes</Info>
+  </vmw:IpAssignmentSection>
+  <VirtualSystemCollection ovf:id="IDSReplayVAPP">
+    <Info>A virtual system collection</Info>
+    <Name>NAPP vApp</Name>
+    <StartupSection>
+      <Info>Specifies the startup order of the application.</Info>
+      <Item ovf:startDelay="20" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_node" ovf:stopDelay="20" ovf:order="1"/>
+      <Item ovf:startDelay="20" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_master" ovf:stopDelay="20" ovf:order="2"/>
+    </StartupSection>
+    <ProductSection>
+        <Info>Information about the installed software</Info>
+        <Product>NAPP vApp</Product>
+        <Vendor>Daniel²</Vendor>
+        <Version>{{VERSION}}</Version>
+        <ProductUrl>https://github.com/danpaul81/napp</ProductUrl>
+        <Category>Networking</Category>
+        <Property ovf:userConfigurable="true" ovf:value="172.16.10.110" ovf:type="string" ovf:key="guestinfo.master_ip">
+          <Label>Master IP</Label>
+          <Description>IP Address for k8s master node</Description>
+        </Property>
+        <Property ovf:userConfigurable="true" ovf:value="172.16.10.111" ovf:type="string" ovf:key="guestinfo.node_ip">
+          <Label>Node IP</Label>
+          <Description>IP Address for k8s node</Description>
+        </Property>
+        <Property ovf:userConfigurable="true" ovf:value="24" ovf:type="string" ovf:key="guestinfo.netmask">
+          <Label>Netmask Prefix</Label>
+          <Description>CIDR notation (e.g. 24 for 255.255.255.0, 28 for 255.255.255.240)</Description>
+        </Property>
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.gateway">
+          <Label>Default Gateway</Label>
+          <Description>Default Gateway IP</Description>
+        </Property>
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.dns">
+          <Label>DNS Server</Label>
+          <Description>Single DNS Server IP</Description>
+        </Property>
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.domain">
+          <Label>DNS Domain</Label>
+          <Description>DNS Search Path</Description>
+        </Property>
+	<Category>Settings</Category>
+        <Property ovf:userConfigurable="true" ovf:password="true" ovf:type="string" ovf:key="guestinfo.root_password">
+          <Label>Root Password</Label>
+          <Description>Password to login in as root. Please use a secure password</Description>
+        </Property>
+        <Category>zDebug</Category>
+        <Property ovf:userConfigurable="true" ovf:value="False" ovf:type="boolean" ovf:key="guestinfo.debug">
+          <Label>Debugging</Label>
+          <Description>Enable Debugging</Description>
+        </Property>
+
+    </ProductSection>

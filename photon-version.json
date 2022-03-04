@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "description": "NSX 3.2 Application Platform vApp",
+  "vm_name": "NAPP_Appliance",
+  "iso_checksum": "md5:2bb1f61d6809835a9562767d947612c4",
+  "iso_url": "https://packages.vmware.com/photon/4.0/Rev2/iso/photon-minimal-4.0-c001795b8.iso",
+  "numvcpus": "2",
+  "ramsize": "4096",
+  "disksize": "4000",
+  "guest_username": "root",
+  "guest_password": "VMware1!"
+}

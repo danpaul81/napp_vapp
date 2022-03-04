@@ -1,0 +1,129 @@
+#!/bin/bash
+
+# Bootstrap script
+
+set -euo pipefail
+
+if [ -e /root/ran_customization ]; then
+    exit
+else
+    NETWORK_CONFIG_FILE=$(ls /etc/systemd/network | grep .network)
+
+    DEBUG_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.debug")
+    DEBUG=$(echo "${DEBUG_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    LOG_FILE=/var/log/bootstrap.log
+    if [ ${DEBUG} == "True" ]; then
+        LOG_FILE=/var/log/photon-customization-debug.log
+        set -x
+        exec 2> ${LOG_FILE}
+        echo
+        echo "### WARNING -- DEBUG LOG CONTAINS ALL EXECUTED COMMANDS WHICH INCLUDES CREDENTIALS -- WARNING ###"
+        echo "### WARNING --             PLEASE REMOVE CREDENTIALS BEFORE SHARING LOG            -- WARNING ###"
+        echo
+    fi
+
+    MASTER_IP_ADDRESS_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.master_ip")
+    NODE_IP_ADDRESS_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.node_ip")
+    NETMASK_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.netmask")
+    GATEWAY_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.gateway")
+    DNS_SERVER_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.dns")
+    DNS_DOMAIN_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.domain")
+    ROOT_PASSWORD_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.root_password")
+    ROLE_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.role")
+#    IDSREPLAY_PORT_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.idsreplayport")
+#    IDSREPLAY_SIDLIST_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.sidlist")
+#    IDSREPLAY_AVIMODE_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.avimode")
+
+#    AVIMODE=$(echo "${IDSREPLAY_AVIMODE_PROPERTY}" | cut -d'"' -f4)
+    ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
+#    IDSREPLAY_PORT=$(echo "${IDSREPLAY_PORT_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+#    IDSREPLAY_SIDLIST=$(echo "${IDSREPLAY_SIDLIST_PROPERTY}" | cut -d'"' -f4)
+    
+#    if ! [ -z "${IDSREPLAY_SIDLIST}" ]; then
+#	IDSREPLAY_SIDLIST="--sidlist '${IDSREPLAY_SIDLIST}'"
+#    fi
+
+#    if [ ${AVIMODE} == "True" ]; then
+#        IDSREPLAY_SIDLIST="--sidlist '$(</root/avi_waf_sid.txt)'"
+#    fi
+
+    if [ ${ROLE} == "master" ]; then
+#        DST_IP_ADDRESS=$(echo "${DST_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+	IP_ADDRESS_PROPERTY=$MASTER_IP_ADDRESS_PROPERTY
+	HOSTNAME="napp-k8s-master"
+    else
+	IP_ADDRESS_PROPERTY=$NODE_IP_ADDRESS_PROPERTY
+	HOSTNAME="napp-k8s-node"
+    fi
+
+    ##################################
+    ### No User Input, assume DHCP ###
+    ##################################
+#    HOSTNAME=$(echo "${HOSTNAME_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+#    if [ -z "${HOSTNAME}" ]; then
+#        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
+#[Match]
+#Name=e*
+#
+#[Network]
+#DHCP=yes
+#IPv6AcceptRA=no
+#__CUSTOMIZE_PHOTON__
+    #########################
+    ### Static IP Address ###
+    #########################
+#    else
+
+        IP_ADDRESS=$(echo "${IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        NETMASK=$(echo "${NETMASK_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        GATEWAY=$(echo "${GATEWAY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        DNS_SERVER=$(echo "${DNS_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        DNS_DOMAIN=$(echo "${DNS_DOMAIN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+
+        echo -e "\e[92mConfiguring Static IP Address ..." > /dev/console
+        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
+[Match]
+Name=e*
+
+[Network]
+Address=${IP_ADDRESS}/${NETMASK}
+Gateway=${GATEWAY}
+DNS=${DNS_SERVER}
+Domain=${DNS_DOMAIN}
+__CUSTOMIZE_PHOTON__
+
+    echo -e "\e[92mConfiguring hostname ..." > /dev/console
+    hostnamectl set-hostname ${HOSTNAME}
+    echo "${IP_ADDRESS} ${HOSTNAME}" >> /etc/hosts
+    echo -e "\e[92mRestarting Network ..." > /dev/console
+    systemctl restart systemd-networkd
+#    fi
+    
+
+    echo -e "\e[92mConfiguring root password ..." > /dev/console
+    ROOT_PASSWORD=$(echo "${ROOT_PASSWORD_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+
+    if [ -z "${ROOT_PASSWORD}" ]; then
+	echo "Empty password setting. No Change"
+    else
+        echo "root:${ROOT_PASSWORD}" | /usr/sbin/chpasswd
+    fi
+
+# depending on appliance role (master or node) prepare vm
+
+    if [ ${ROLE} == "master" ]; then
+	echo "K8S MASTER"
+	#IDSSTARTCMD="/usr/bin/docker run --rm --name idsreplay-src  -e IDSREPLAYOPTS='--dest ${DST_IP_ADDRESS}  --dport ${IDSREPLAY_PORT} ${IDSREPLAY_SIDLIST}' idsreplay"
+	#IDSSTOPCMD="/usr/bin/docker rm -f idsreplay-src"
+    else
+        echo "K8S NODE"
+	#IDSSTARTCMD="/usr/bin/docker run --rm --name idsreplay-tgt -p ${IDSREPLAY_PORT}:5000 nsx-demo"
+	#IDSSTOPCMD="/usr/bin/docker rm -f idsreplay-tgt"
+    fi
+
+
+
+
+    # Ensure we don't run customization again
+    touch /root/ran_customization
+fi
