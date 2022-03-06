@@ -51,6 +51,10 @@ else
 	HOSTNAME="napp-k8s-node"
     fi
 
+    echo "${NODE_IP_ADDRESS} napp-k8s-node" >> /etc/hosts
+    echo "${MASTER_IP_ADDRESS} napp-k8s-master" >> /etc/hosts
+    hostnamectl set-hostname ${HOSTNAME}
+
     NETMASK=$(echo "${NETMASK_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     GATEWAY=$(echo "${GATEWAY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     DNS_SERVER=$(echo "${DNS_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
@@ -73,9 +77,6 @@ DNS=${DNS_SERVER}
 Domain=${DNS_DOMAIN}
 __CUSTOMIZE_PHOTON__
 
-    echo -e "\e[92mConfiguring hostname ..." > /dev/console
-    hostnamectl set-hostname ${HOSTNAME}
-    echo "${IP_ADDRESS} ${HOSTNAME}" >> /etc/hosts
     echo -e "\e[92mRestarting Network ..." > /dev/console
     systemctl restart systemd-networkd
 
@@ -91,9 +92,8 @@ __CUSTOMIZE_PHOTON__
 # depending on appliance role (master or node) prepare vm
 
     if [ ${ROLE} == "node" ]; then
-	echo "K8S MASTER"
+	# preparation of node -> will also setup master
 	export SSHPASS=${ROOT_PASSWORD}
-
 	
 	# create SSH Passphrase. Host Key checking is already disabled
 	ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
@@ -101,7 +101,7 @@ __CUSTOMIZE_PHOTON__
 
 	mkdir -p /nappinstall
 	
-	echo "export nsxmanager=${NSXMGR}" >> /nappinstall/variables.txt
+	echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
 	echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
 	echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
 	echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
@@ -112,25 +112,25 @@ __CUSTOMIZE_PHOTON__
 	systemctl enable nfs-server.service	
 	systemctl start nfs-server.service
 
-
+	# SETUP K8S Master
 	cp k8s-master-setup.sh /nappinstall
 
 	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
 	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{K8SMASTER}}\'$MASTER_IP_ADDRESS'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{PODNET}}\'$PODNET'\g' /nappinstall/k8s-master-setup.sh
-
-        	
-
-
-
-
 	
-
+	# copy customized k8s master setup script & execute
+	scp /nappinstall/k8s-master-setup.sh ${MASTER_IP_ADDRESS}:/nappinstall
+	ssh ${MASTER_IP_ADDRESS} bash /nappinstall/k8s-master-setup.sh
+        	
+	# Join K8S Cluster
+	ssh ${MASTER_IP_ADDRESS} tail -n 2 /root/kubeadm/kubeadm-init.out > /nappinstall/kubeadm-node.sh
+	#bash /nappinstall/kubeadm-node.sh
 
 
     else
-	echo "K8S NODE"
+	# preparation of master node
 	mkdir /nappinstall
         touch /root/ran_customization
         reboot

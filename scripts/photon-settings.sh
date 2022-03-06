@@ -12,6 +12,8 @@ systemctl enable docker
 echo '> Start Docker'
 systemctl start docker
 
+systemctl disable iptables
+
 #echo '> Loading Docker Images'
 #docker pull harbor-repo.vmware.com/dpaul/idsreplay:latest
 #docker tag harbor-repo.vmware.com/dpaul/idsreplay:latest idsreplay
