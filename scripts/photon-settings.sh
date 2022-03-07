@@ -25,12 +25,9 @@ tdnf -y update || true
 
 echo '> Installing Additional Packages...'
 tdnf install -y \
-  less \
   logrotate \
-  curl \
   wget \
   unzip \
-  awk \
   tar \
   sshpass \
   nfs-utils \

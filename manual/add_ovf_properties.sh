@@ -2,10 +2,10 @@
 
 
 #debug settings, comment on prod system
-PHOTON_APPLIANCE_NAME="NAPP_Appliance"
-FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
-PHOTON_NETWORK="OL_SEG_10"
-VAPP_OVF_TEMPLATE="vapp.xml.template"
+#PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+#FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+#PHOTON_NETWORK="OL_SEG_10"
+#VAPP_OVF_TEMPLATE="vapp.xml.template"
 #
 
 ORIGPATH=$(pwd)
@@ -44,7 +44,7 @@ cp $VIRTUALSYSTEM1_TEMP $VIRTUALSYSTEM2_TEMP
 
 # save disksizes from original OVF
 DISKSIZE1=$(grep "${PHOTON_APPLIANCE_NAME}-disk-0.vmdk" $VAPP_OVF |cut -d\" -f6)
-DISKSIZE2=$(grep "${PHOTON_APPLIANCE_NAME}-disk-1.vmdk" $VAPP_OVF |cut -d\" -f6)
+#DISKSIZE2=$(grep "${PHOTON_APPLIANCE_NAME}-disk-1.vmdk" $VAPP_OVF |cut -d\" -f6)
 
 # replace packer-created OVF with template
 cp $VAPP_OVF_TEMPLATE $VAPP_OVF
@@ -53,7 +53,7 @@ cp $VAPP_OVF_TEMPLATE $VAPP_OVF
 sed -i "s/{{VERSION}}/${PHOTON_VERSION}/g" $VAPP_OVF
 sed -i "s/{{APPLIANCENAME}}/${PHOTON_APPLIANCE_NAME}/g" $VAPP_OVF
 sed -i "s/{{DISKSIZE1}}/${DISKSIZE1}/g" $VAPP_OVF
-sed -i "s/{{DISKSIZE2}}/${DISKSIZE2}/g" $VAPP_OVF
+#sed -i "s/{{DISKSIZE2}}/${DISKSIZE2}/g" $VAPP_OVF
 sed -i "s/{{NETWORK}}/${PHOTON_NETWORK}/g" $VAPP_OVF
 
 echo "replacements done"
@@ -84,8 +84,8 @@ EOF
     #remove last tag and add new footer
     sed -i "/  <\/VirtualSystem>/d" $VIRTUALSYSTEM2_TEMP
     #modify original vmdisk1/vmdisk2 to vmdisk2/vmdisk4
-    sed -i "s/vmdisk1/vmdisk2/g" $VIRTUALSYSTEM2_TEMP
     sed -i "s/vmdisk2/vmdisk4/g" $VIRTUALSYSTEM2_TEMP
+    sed -i "s/vmdisk1/vmdisk2/g" $VIRTUALSYSTEM2_TEMP
 
     cat >>$VIRTUALSYSTEM2_TEMP <<EOF
     <ProductSection>
