@@ -1,13 +1,17 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vmw="http://www.vmware.com/schema/ovf" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">
   <References>
-    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file1" ovf:size="{{DISKSIZE}}"/>
-    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file2" ovf:size="{{DISKSIZE}}"/>
+    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file1" ovf:size="{{DISKSIZE1}}"/>
+    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file2" ovf:size="{{DISKSIZE1}}"/>
+    <File ovf:href="{{APPLIANCENAME}}-disk-1.vmdk" ovf:id="file3" ovf:size="{{DISKSIZE2}}"/>
+    <File ovf:href="{{APPLIANCENAME}}-disk-1.vmdk" ovf:id="file4" ovf:size="{{DISKSIZE2}}"/>
   </References>
   <DiskSection>
     <Info>List of the virtual disks</Info>
     <Disk ovf:capacityAllocationUnits="byte" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk1" ovf:capacity="4194304000" ovf:fileRef="file1"/>
     <Disk ovf:capacityAllocationUnits="byte" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk2" ovf:capacity="4194304000" ovf:fileRef="file2"/>
+    <Disk ovf:capacityAllocationUnits="byte" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk3" ovf:capacity="10" ovf:fileRef="file3"/>
+    <Disk ovf:capacityAllocationUnits="byte" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk4" ovf:capacity="${disk4size}" ovf:fileRef="file4"/>
   </DiskSection>
   <NetworkSection>
     <Info>The list of logical networks</Info>
@@ -23,8 +27,8 @@
     <Name>NAPP vApp</Name>
     <StartupSection>
       <Info>Specifies the startup order of the application.</Info>
-      <Item ovf:startDelay="20" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_node" ovf:stopDelay="20" ovf:order="1"/>
-      <Item ovf:startDelay="20" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_master" ovf:stopDelay="20" ovf:order="2"/>
+      <Item ovf:startDelay="30" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_node" ovf:stopDelay="30" ovf:order="2"/>
+      <Item ovf:startDelay="30" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_master" ovf:stopDelay="30" ovf:order="1"/>
     </StartupSection>
     <ProductSection>
         <Info>Information about the installed software</Info>
@@ -82,11 +86,23 @@
           <Label>NSX User Password</Label>
           <Description>NSX User Password</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="172.25.0.0/26" ovf:type="string" ovf:key="guestinfo.podnet">
+        <Property ovf:userConfigurable="true" ovf:value="172.25.0.0/24" ovf:type="string" ovf:key="guestinfo.podnet">
           <Label>POD Network</Label>
           <Description>CIDR to use for Antrea POD Networking</Description>
+  	</Property>
+	<Property ovf:key="disk4size" 
+	    ovf:runtimeConfigurable="false"    
+            ovf:type="int"
+            ovf:qualifiers="MinValue(1) MaxValue(10000)"
+            ovf:value="5"
+            ovf:userConfigurable="true">
+        <Label>Node Datadisk Size</Label>
+        <Description>The size of the disk in gigabytes.</Description>
+	</Property>
+	<Property ovf:userConfigurable="false" ovf:value="True" ovf:type="boolean" ovf:key="guestinfo.preload">
+          <Label>Pre-Load Images</Label>
+          <Description>pre-load container images to prevent deployment failure</Description>
         </Property>
-
         <Category>zDebug</Category>
         <Property ovf:userConfigurable="true" ovf:value="False" ovf:type="boolean" ovf:key="guestinfo.debug">
           <Label>Debugging</Label>

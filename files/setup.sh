@@ -36,8 +36,10 @@ else
     NSXUSER_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nsxuser")
     NSXPASSWORD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nsxpassword")
     PODNET_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.podnet")
+    PRELOAD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.preload")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
+    PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4
 
     MASTER_IP_ADDRESS=$(echo "${MASTER_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NODE_IP_ADDRESS=$(echo "${NODE_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
@@ -113,7 +115,7 @@ __CUSTOMIZE_PHOTON__
 	systemctl start nfs-server.service
 
 	# SETUP K8S Master
-	cp k8s-master-setup.sh /nappinstall
+	cp /root/k8s-master-setup.sh /nappinstall
 
 	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
 	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
@@ -126,14 +128,21 @@ __CUSTOMIZE_PHOTON__
         	
 	# Join K8S Cluster
 	ssh ${MASTER_IP_ADDRESS} tail -n 2 /root/kubeadm/kubeadm-init.out > /nappinstall/kubeadm-node.sh
-	#bash /nappinstall/kubeadm-node.sh
+	bash /nappinstall/kubeadm-node.sh
+
+  
+        #preload container images
+	if [ ${PRELOAD} == "True" ]; then
+	  echo "preloading container images"
+	fi
+
+	# install Antrea
+	ssh ${MASTER_IP_ADDRESS} kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.5.0/antrea.yml 
 
 
     else
 	# preparation of master node
 	mkdir /nappinstall
-        touch /root/ran_customization
-        reboot
     fi
 
 

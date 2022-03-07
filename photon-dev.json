@@ -32,6 +32,10 @@
        {
          "disk_size": "{{ user `disksize`}}",
          "disk_thin_provisioned": true
+       },
+       {
+         "disk_size": "10",
+         "disk_thin_provisioned": true
        }
       ],
       "boot_command": [
@@ -87,6 +91,11 @@
       "type": "file",
       "source": "files/setup.sh",
       "destination": "/root/setup.sh"
+    },
+    {
+      "type": "file",
+      "source": "files/k8s-master-setup.sh",
+      "destination": "/root/k8s-master-setup.sh"
     },
     {
       "type": "file",

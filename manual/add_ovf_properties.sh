@@ -1,5 +1,13 @@
 #!/bin/bash
 
+
+#debug settings, comment on prod system
+PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+PHOTON_NETWORK="OL_SEG_10"
+VAPP_OVF_TEMPLATE="vapp.xml.template"
+#
+
 ORIGPATH=$(pwd)
 cd ..
 OUTPUT_PATH="$(pwd)/output-vsphere-iso"
@@ -34,8 +42,9 @@ xmlstarlet -L  ed -d '/Envelope/VirtualSystem' $VAPP_OVF 2>/dev/null
 #duplicate virtual system definition
 cp $VIRTUALSYSTEM1_TEMP $VIRTUALSYSTEM2_TEMP
 
-# save disksize from original OVF
-DISKSIZE=$(grep "<File" $VAPP_OVF |cut -d\" -f6)
+# save disksizes from original OVF
+DISKSIZE1=$(grep "${PHOTON_APPLIANCE_NAME}-disk-0.vmdk" $VAPP_OVF |cut -d\" -f6)
+DISKSIZE2=$(grep "${PHOTON_APPLIANCE_NAME}-disk-1.vmdk" $VAPP_OVF |cut -d\" -f6)
 
 # replace packer-created OVF with template
 cp $VAPP_OVF_TEMPLATE $VAPP_OVF
@@ -43,9 +52,11 @@ cp $VAPP_OVF_TEMPLATE $VAPP_OVF
 # replace version/name/disksize/network in template
 sed -i "s/{{VERSION}}/${PHOTON_VERSION}/g" $VAPP_OVF
 sed -i "s/{{APPLIANCENAME}}/${PHOTON_APPLIANCE_NAME}/g" $VAPP_OVF
-sed -i "s/{{DISKSIZE}}/${DISKSIZE}/g" $VAPP_OVF
+sed -i "s/{{DISKSIZE1}}/${DISKSIZE1}/g" $VAPP_OVF
+sed -i "s/{{DISKSIZE2}}/${DISKSIZE2}/g" $VAPP_OVF
 sed -i "s/{{NETWORK}}/${PHOTON_NETWORK}/g" $VAPP_OVF
 
+echo "replacements done"
 
 #setup Virtual System for napp master
     #modify name
@@ -53,6 +64,9 @@ sed -i "s/{{NETWORK}}/${PHOTON_NETWORK}/g" $VAPP_OVF
     sed -i "s/<Name>.*<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_master<\/Name>/g" $VIRTUALSYSTEM1_TEMP
     #remove last tag and add new footer
     sed -i "/  <\/VirtualSystem>/d" $VIRTUALSYSTEM1_TEMP
+    # modify original vmdisk1/vmdisk2 to vmdisk1/vmdisk3
+    sed -i "s/vmdisk2/vmdisk3/g" $VIRTUALSYSTEM1_TEMP
+
     cat >>$VIRTUALSYSTEM1_TEMP <<EOF
     <ProductSection>
      <Info>Information about the installed software</Info>
@@ -63,14 +77,16 @@ sed -i "s/{{NETWORK}}/${PHOTON_NETWORK}/g" $VAPP_OVF
     </ProductSection>
   </VirtualSystem>
 EOF
-#setup Virtual System for idsreplay target
+#setup Virtual System for napp node
     #modify name
     sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_node\">/g" $VIRTUALSYSTEM2_TEMP
     sed -i "s/<Name>.*<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_node<\/Name>/g" $VIRTUALSYSTEM2_TEMP
     #remove last tag and add new footer
     sed -i "/  <\/VirtualSystem>/d" $VIRTUALSYSTEM2_TEMP
-    #modify disk to vmdisk2
+    #modify original vmdisk1/vmdisk2 to vmdisk2/vmdisk4
     sed -i "s/vmdisk1/vmdisk2/g" $VIRTUALSYSTEM2_TEMP
+    sed -i "s/vmdisk2/vmdisk4/g" $VIRTUALSYSTEM2_TEMP
+
     cat >>$VIRTUALSYSTEM2_TEMP <<EOF
     <ProductSection>
       <Info>Information about the installed software</Info>
@@ -81,6 +97,7 @@ EOF
     </ProductSection>
   </VirtualSystem>
 EOF
+echo "done virtual systems mods"
 
 cat $VIRTUALSYSTEM1_TEMP >>$VAPP_OVF
 cat $VIRTUALSYSTEM2_TEMP >>$VAPP_OVF
