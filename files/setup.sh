@@ -69,7 +69,7 @@ else
     PODNET=$(echo "${PODNET_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NAPPFQDN=$(echo "${NAPPFQDN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
 
-    echo -e "\e[92mConfiguring Static IP Address ..." > /dev/console
+    echo -e "\e[92mConfiguring Static IP Address ...\e[37m"
     cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
 [Match]
 Name=e*
@@ -81,10 +81,10 @@ DNS=${DNS_SERVER}
 Domain=${DNS_DOMAIN}
 __CUSTOMIZE_PHOTON__
 
-    echo -e "\e[92mRestarting Network ..." > /dev/console
+    echo -e "\e[92mRestarting Network ...\e[37m"
     systemctl restart systemd-networkd
 
-    echo -e "\e[92mConfiguring root password ..." > /dev/console
+    echo -e "\e[92mConfiguring root password ...\e[37m"
     ROOT_PASSWORD=$(echo "${ROOT_PASSWORD_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
 	
     if [ -z "${ROOT_PASSWORD}" ]; then
@@ -97,7 +97,7 @@ __CUSTOMIZE_PHOTON__
 
     if [ ${ROLE} == "node" ]; then
 	# preparation of node -> will also setup master
-	echo -e "\e[92m Role: k8s node"
+	echo -e "\e[92m Role: k8s node\e[37m"
 	export SSHPASS=${ROOT_PASSWORD}
 	
 	# create SSH Passphrase. Host Key checking is already disabled
@@ -107,14 +107,14 @@ __CUSTOMIZE_PHOTON__
 	tar -xzf /root/nappinstall.tgz -C /
 	#mkdir -p /nappinstall
 	
-	echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
-	echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
-	echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
-	echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
-	echo "export ippool=${NAPPFQDN}" >> /nappinstall/variables.txt 
+	#echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
+	#echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
+	#echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
+	#echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
+	#echo "export ippool=${NAPPFQDN}" >> /nappinstall/variables.txt 
 
         #prepare data disk sdb1. only necessary on node
-	echo -e "\e[92mCreating Data Disk"
+	echo -e "\e[92mCreating Data Disk\e[37m"
 	echo 'type=83' | sfdisk /dev/sdb
 	mkfs.ext4 /dev/sdb1
 	mkdir -p /nfs
@@ -122,7 +122,7 @@ __CUSTOMIZE_PHOTON__
 	echo '/dev/sdb1       /nfs    ext4    defaults     0   0' | sudo tee -a /etc/fstab
 
 	# re-mount docker / kubelet datadir to data disk
-	echo -e "\e[92mre-mount Docker / Kubelet storage"
+	echo -e "\e[92mre-mount Docker / Kubelet storage\e[37m"
 	#docker rm -f $(docker ps -aq); docker rmi -f $(docker images -q)
 	systemctl stop docker
 	rm -rf /var/lib/docker
@@ -136,48 +136,76 @@ __CUSTOMIZE_PHOTON__
 	systemctl start docker
 	systemctl restart kubelet
 
-	echo -e "\e[92mCreating NFS SERVER"
+	echo -e "\e[92mCreating NFS SERVER\e[37m"
 	mkdir -p /nfs/k8s
 	echo '/nfs/k8s        *(rw,sync,no_root_squash,no_subtree_check)' | tee -a /etc/exports
 	chown nobody:nogroup /nfs/k8s
 	systemctl enable nfs-server.service	
 	systemctl start nfs-server.service
 
-	echo -e "\e[92mprepare k8s master node script"
+	echo -e "\e[92mprepare k8s master node script\e[37m"
 
 	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
 	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{K8SMASTER}}\'$MASTER_IP_ADDRESS'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{PODNET}}\'$PODNET'\g' /nappinstall/k8s-master-setup.sh
 	
-	echo -e "\e[92mcopy customized k8s master setup script to master & create cluster"
+	echo -e "\e[92mcopy customized k8s master setup script to master & create cluster\e[37m"
 	scp /nappinstall/k8s-master-setup.sh ${MASTER_IP_ADDRESS}:/nappinstall
 	ssh ${MASTER_IP_ADDRESS} bash /nappinstall/k8s-master-setup.sh
         	
-	echo -e "\e[92mJoin K8S Cluster"
+	echo -e "\e[92mJoin K8S Cluster\e[37m"
 	ssh ${MASTER_IP_ADDRESS} tail -n 2 /root/kubeadm/kubeadm-init.out > /nappinstall/kubeadm-node.sh
 	bash /nappinstall/kubeadm-node.sh
 
-	echo -e "\e[92mgrant local node api access"
+	echo -e "\e[92mgrant local node api access\e[37m"
 	mkdir -p /root/.kube
 	scp ${MASTER_IP_ADDRESS}:/etc/kubernetes/admin.conf /root/.kube/config
  	chown $(id -u):$(id -g) /root/.kube/config
+	export KUBECONFIG=/root/.kube/config
 
-	echo -e "\e[92mPreload Antra / MetalLB to prevent setup timing issues"
-	#docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
-	#docker pull quay.io/metallb/controller:main
-	#docker pull quay.io/metallb/speaker:main
-        sed -i -e 's\{{VIP}}\'$VIP'\g' /nappinstall/setup-k8s-services.sh
+	echo -e "\e[92mPreload Antra / MetalLB to prevent setup timing issues\e[37m"
+	docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+	docker pull quay.io/metallb/controller:main
+	docker pull quay.io/metallb/speaker:main
+
+	# push VIP to metallb configmap
+        sed -i -e 's\{{VIP}}\'$VIP'\g' /nappinstall/metallb-configmap.yaml
+
 	# install Antrea/MetalLB/NFS Provisioner
-	bash /nappinstall/setup-k8s-services.sh
+	echo -e "\e[92mSetting Up k8s services Antrea, MetalLB and NFS-Client-Provisioner\e[37m"
 
+	# setup antrea
+	kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.5.0/antrea.yml
+	# setup metallb
+	kubectl create ns metallb-system
+	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12/manifests/metallb.yaml -n metallb-system
+	kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+	kubectl apply -f /nappinstall/metallb-configmap.yaml
 
-        #preload container images
+	# nfs-provisioner
+	kubectl apply -f /nappinstall/nfs-provisioner.yaml
+
+        #preload container base images
 	if [ ${PRELOAD} == "True" ]; then
-	  echo -e "\e[92mpreloading NSX container images"
-	  bash /nappinstall/download-images.sh
+	  echo -e "\e[92mpreloading NSX container base images\e[37m"
+	  bash /nappinstall/download-base-images.sh
 	else
-	  echo -e "\e[92mno NSX container preload selected"
+	  echo -e "\e[92mno NSX container preload for base images selected\e[37m"
+	fi
+
+	echo -e "\e[92mPreparing NSX Manager NAPP Settings\e[37m"
+        sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-install-nsx.sh
+        sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' /nappinstall/napp-install-nsx.sh
+        sed -i -e 's\{{nsxmanager}}\'$NSXMGR'\g' /nappinstall/napp-install-nsx.sh
+        sed -i -e 's\{{nappfqdn}}\'$NAPPFQDN'\g' /nappinstall/napp-install-nsx.sh
+
+        #preload container base images
+	if [ ${PRELOAD} == "True" ]; then
+	  echo -e "\e[92mpreloading NSX application platform container images\e[37m"
+	  bash /nappinstall/download-solution-images.sh
+	else
+	  echo -e "\e[92mno NSX container preload for solution images selected\e[37m"
 	fi
 
     else

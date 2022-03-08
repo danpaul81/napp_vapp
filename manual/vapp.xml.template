@@ -8,7 +8,7 @@
     <Info>List of the virtual disks</Info>
     <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk1" ovf:capacity="4" ovf:fileRef="file1"/>
     <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk2" ovf:capacity="4" ovf:fileRef="file2"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk3" ovf:capacity="${disk3size}"/>
+    <Disk ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk3" ovf:capacity="10"/>
     <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk4" ovf:capacity="${disk4size}"/>
   </DiskSection>
   <NetworkSection>
@@ -92,15 +92,6 @@
           <Label>POD Network</Label>
           <Description>CIDR to use for Antrea POD Networking</Description>
  	</Property>
-	<Property ovf:key="disk3size" 
-	    ovf:runtimeConfigurable="false"    
-            ovf:type="int"
-            ovf:qualifiers="MinValue(1) MaxValue(10)"
-            ovf:value="10"
-            ovf:userConfigurable="false">
-        <Label>Master Datadisk Size (MB)</Label>
-        <Description>The size of the disk in megabytes.</Description>
-	</Property>
 	<Property ovf:key="disk4size" 
 	    ovf:runtimeConfigurable="false"    
             ovf:type="int"
@@ -114,10 +105,8 @@
           <Label>Pre-Load Images</Label>
           <Description>pre-load container images to prevent deployment failure</Description>
         </Property>
-        <Category>zDebug</Category>
         <Property ovf:userConfigurable="true" ovf:value="False" ovf:type="boolean" ovf:key="guestinfo.debug">
           <Label>Debugging</Label>
           <Description>Enable Debugging</Description>
         </Property>
-
     </ProductSection>
