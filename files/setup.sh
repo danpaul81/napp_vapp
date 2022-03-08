@@ -39,7 +39,7 @@ else
     PRELOAD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.preload")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
-    PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4
+    PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4)
 
     MASTER_IP_ADDRESS=$(echo "${MASTER_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NODE_IP_ADDRESS=$(echo "${NODE_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
@@ -84,7 +84,7 @@ __CUSTOMIZE_PHOTON__
 
     echo -e "\e[92mConfiguring root password ..." > /dev/console
     ROOT_PASSWORD=$(echo "${ROOT_PASSWORD_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-
+	
     if [ -z "${ROOT_PASSWORD}" ]; then
 	echo "Empty password setting. No Change"
     else
@@ -103,14 +103,38 @@ __CUSTOMIZE_PHOTON__
 
 	mkdir -p /nappinstall
 	
-	echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
-	echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
-	echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
-	echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
-	
+	#echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
+	#echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
+	#echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
+	#echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
+
+        #prepare data disk sdb1. only necessary on node
+	echo "Creating Data Disk"
+	echo 'type=83' | sfdisk /dev/sdb
+	mkfs.ext4 /dev/sdb1
+	mkdir -p /nfs
+	mount /dev/sdb1 /nfs
+	echo '/dev/sdb1       /nfs    ext4    defaults     0   0' | sudo tee -a /etc/fstab
+
+	# re-mount docker / kubelet datadir to data disk
+	echo "re-mount Docker / Kubelet storage"
+	docker rm -f $(docker ps -aq); docker rmi -f $(docker images -q)
+	systemctl stop docker
+	rm -rf /var/lib/docker
+	rm -rf /var/lib/kubelet
+	mkdir /var/lib/docker
+	mkdir /var/lib/kubelet/
+	mkdir /nfs/docker
+	mkdir /nfs/kubelet
+	mount --rbind /nfs/docker/ /var/lib/docker
+	mount --rbind /nfs/kubelet/ /var/lib/kubelet
+	systemctl start docker
+	systemctl restart kubelet
+
 	echo "Creating NFS SERVER"
 	mkdir -p /nfs/k8s
 	echo '/nfs/k8s        *(rw,sync,no_root_squash,no_subtree_check)' | tee -a /etc/exports
+	chown nobody:nogroup /nfs/k8s
 	systemctl enable nfs-server.service	
 	systemctl start nfs-server.service
 
