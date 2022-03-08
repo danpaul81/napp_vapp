@@ -72,6 +72,10 @@
           <Label>Root Password</Label>
           <Description>Password to login in as root. Please use a secure password</Description>
         </Property>
+        <Property ovf:userConfigurable="true" ovf:value="napp.corp.local" ovf:type="string" ovf:key="guestinfo.nappfqdn">
+          <Label>NAPP DNS Service Name</Label>
+          <Description>NSX Application Platform DNS Service Name</Description>
+        </Property>
         <Property ovf:userConfigurable="true" ovf:value="192.168.110.201" ovf:type="string" ovf:key="guestinfo.nsxmanager">
           <Label>NSX Manager IP</Label>
           <Description>NSX Manager IP Address</Description>
@@ -84,7 +88,7 @@
           <Label>NSX User Password</Label>
           <Description>NSX User Password</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="172.25.0.0/24" ovf:type="string" ovf:key="guestinfo.podnet">
+        <Property ovf:userConfigurable="true" ovf:value="172.25.0.0/16" ovf:type="string" ovf:key="guestinfo.podnet">
           <Label>POD Network</Label>
           <Description>CIDR to use for Antrea POD Networking</Description>
  	</Property>
@@ -93,7 +97,7 @@
             ovf:type="int"
             ovf:qualifiers="MinValue(1) MaxValue(10)"
             ovf:value="10"
-            ovf:userConfigurable="true">
+            ovf:userConfigurable="false">
         <Label>Master Datadisk Size (MB)</Label>
         <Description>The size of the disk in megabytes.</Description>
 	</Property>
@@ -101,7 +105,7 @@
 	    ovf:runtimeConfigurable="false"    
             ovf:type="int"
             ovf:qualifiers="MinValue(1) MaxValue(10000)"
-            ovf:value="5"
+            ovf:value="1000"
             ovf:userConfigurable="true">
         <Label>Node Datadisk Size (GB)</Label>
         <Description>The size of the disk in gigabytes.</Description>

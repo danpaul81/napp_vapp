@@ -37,6 +37,7 @@ else
     NSXPASSWORD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nsxpassword")
     PODNET_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.podnet")
     PRELOAD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.preload")
+    NAPPFQDN_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappfqdn")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
     PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4)
@@ -66,6 +67,7 @@ else
     NSXPASSWORD=$(echo "${NSXPASSWORD_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     VIP=$(echo "${VIP_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     PODNET=$(echo "${PODNET_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    NAPPFQDN=$(echo "${NAPPFQDN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
 
     echo -e "\e[92mConfiguring Static IP Address ..." > /dev/console
     cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
@@ -95,21 +97,24 @@ __CUSTOMIZE_PHOTON__
 
     if [ ${ROLE} == "node" ]; then
 	# preparation of node -> will also setup master
+	echo -e "\e[92m Role: k8s node"
 	export SSHPASS=${ROOT_PASSWORD}
 	
 	# create SSH Passphrase. Host Key checking is already disabled
 	ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
 	sshpass -e ssh-copy-id -i /root/.ssh/id_rsa ${MASTER_IP_ADDRESS}
-
-	mkdir -p /nappinstall
 	
-	#echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
-	#echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
-	#echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
-	#echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
+	tar -xzf /root/nappinstall.tgz -C /
+	#mkdir -p /nappinstall
+	
+	echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
+	echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
+	echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
+	echo "export ippool=${VIP}" >> /nappinstall/variables.txt 
+	echo "export ippool=${NAPPFQDN}" >> /nappinstall/variables.txt 
 
         #prepare data disk sdb1. only necessary on node
-	echo "Creating Data Disk"
+	echo -e "\e[92mCreating Data Disk"
 	echo 'type=83' | sfdisk /dev/sdb
 	mkfs.ext4 /dev/sdb1
 	mkdir -p /nfs
@@ -117,8 +122,8 @@ __CUSTOMIZE_PHOTON__
 	echo '/dev/sdb1       /nfs    ext4    defaults     0   0' | sudo tee -a /etc/fstab
 
 	# re-mount docker / kubelet datadir to data disk
-	echo "re-mount Docker / Kubelet storage"
-	docker rm -f $(docker ps -aq); docker rmi -f $(docker images -q)
+	echo -e "\e[92mre-mount Docker / Kubelet storage"
+	#docker rm -f $(docker ps -aq); docker rmi -f $(docker images -q)
 	systemctl stop docker
 	rm -rf /var/lib/docker
 	rm -rf /var/lib/kubelet
@@ -131,38 +136,49 @@ __CUSTOMIZE_PHOTON__
 	systemctl start docker
 	systemctl restart kubelet
 
-	echo "Creating NFS SERVER"
+	echo -e "\e[92mCreating NFS SERVER"
 	mkdir -p /nfs/k8s
 	echo '/nfs/k8s        *(rw,sync,no_root_squash,no_subtree_check)' | tee -a /etc/exports
 	chown nobody:nogroup /nfs/k8s
 	systemctl enable nfs-server.service	
 	systemctl start nfs-server.service
 
-	# SETUP K8S Master
-	cp /root/k8s-master-setup.sh /nappinstall
+	echo -e "\e[92mprepare k8s master node script"
 
 	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
 	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{K8SMASTER}}\'$MASTER_IP_ADDRESS'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{PODNET}}\'$PODNET'\g' /nappinstall/k8s-master-setup.sh
 	
-	# copy customized k8s master setup script & execute
+	echo -e "\e[92mcopy customized k8s master setup script to master & create cluster"
 	scp /nappinstall/k8s-master-setup.sh ${MASTER_IP_ADDRESS}:/nappinstall
 	ssh ${MASTER_IP_ADDRESS} bash /nappinstall/k8s-master-setup.sh
         	
-	# Join K8S Cluster
+	echo -e "\e[92mJoin K8S Cluster"
 	ssh ${MASTER_IP_ADDRESS} tail -n 2 /root/kubeadm/kubeadm-init.out > /nappinstall/kubeadm-node.sh
 	bash /nappinstall/kubeadm-node.sh
 
-  
+	echo -e "\e[92mgrant local node api access"
+	mkdir -p /root/.kube
+	scp ${MASTER_IP_ADDRESS}:/etc/kubernetes/admin.conf /root/.kube/config
+ 	chown $(id -u):$(id -g) /root/.kube/config
+
+	echo -e "\e[92mPreload Antra / MetalLB to prevent setup timing issues"
+	#docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+	#docker pull quay.io/metallb/controller:main
+	#docker pull quay.io/metallb/speaker:main
+        sed -i -e 's\{{VIP}}\'$VIP'\g' /nappinstall/setup-k8s-services.sh
+	# install Antrea/MetalLB/NFS Provisioner
+	bash /nappinstall/setup-k8s-services.sh
+
+
         #preload container images
 	if [ ${PRELOAD} == "True" ]; then
-	  echo "preloading container images"
+	  echo -e "\e[92mpreloading NSX container images"
+	  bash /nappinstall/download-images.sh
+	else
+	  echo -e "\e[92mno NSX container preload selected"
 	fi
-
-	# install Antrea
-	ssh ${MASTER_IP_ADDRESS} kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.5.0/antrea.yml 
-
 
     else
 	# preparation of master node

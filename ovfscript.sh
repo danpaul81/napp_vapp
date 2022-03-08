@@ -1,1 +1,1 @@
-ovftool --noSSLVerify  --network=OL_SEG_10 --datastore=DS2 ./output-vsphere-iso/NAPP.ova vi://administrator@vsphere.local:443@vcsa-01a.corp.local/DC-SiteA/host/Compute-Cluster
+ovftool --noSSLVerify --diskMode=thin --prop:guestinfo.preload=False --network=OL_SEG_10 --datastore=DS2 ./output-vsphere-iso/NAPP_Appliance_0.0.1_vapp.ova vi://administrator@vsphere.local:443@vcsa-01a.corp.local/DC-SiteA/host/Compute-Cluster
