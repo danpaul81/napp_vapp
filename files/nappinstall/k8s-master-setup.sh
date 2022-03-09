@@ -15,8 +15,10 @@ networking:
 
 kubeadm init --config=/root/kubeadm/kubeadm-config.yaml --upload-certs | tee /root/kubeadm/kubeadm-init.out
 
-mkdir -p $HOME/.kube
-cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-chown $(id -u):$(id -g) $HOME/.kube/config
+export KUBECONFIG=/root/.kube/config
+
+mkdir -p /root/.kube
+cp -i /etc/kubernetes/admin.conf /root/.kube/config
+chown $(id -u):$(id -g) /root/.kube/config
 source /usr/share/bash-completion/bash_completion
-echo 'source <(kubectl completion bash)' >>~/.bashrc
+echo 'source <(kubectl completion bash)' >>/root/.bashrc

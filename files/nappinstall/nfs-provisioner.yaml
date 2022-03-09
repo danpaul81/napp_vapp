@@ -92,13 +92,13 @@ spec:
             - name: PROVISIONER_NAME
               value: k8s-sigs.io/nfs-subdir-external-provisioner
             - name: NFS_SERVER
-              value: localhost
+              value: {{NFSSERVER}}
             - name: NFS_PATH
               value: /nfs/k8s
       volumes:
         - name: nfs-client-root
           nfs:
-            server: localhost
+            server: {{NFSSERVER}}
             path: /nfs/k8s
 ---
 apiVersion: storage.k8s.io/v1

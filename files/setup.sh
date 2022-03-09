@@ -68,7 +68,7 @@ else
     VIP=$(echo "${VIP_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     PODNET=$(echo "${PODNET_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NAPPFQDN=$(echo "${NAPPFQDN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-
+    NTP_SERVER=$(echo "${NTP_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     echo -e "\e[92mConfiguring Static IP Address ...\e[37m"
     cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
 [Match]
@@ -92,6 +92,10 @@ __CUSTOMIZE_PHOTON__
     else
         echo "root:${ROOT_PASSWORD}" | /usr/sbin/chpasswd
     fi
+
+    echo -e "\e[92mSetting up NTP\e[37m"
+    echo "NTP=${NTP_SERVER}" >> /etc/systemd/timesyncd.conf
+    systemctl restart systemd-timesyncd
 
 # depending on appliance role (master or node) prepare vm
 
@@ -164,13 +168,20 @@ __CUSTOMIZE_PHOTON__
  	chown $(id -u):$(id -g) /root/.kube/config
 	export KUBECONFIG=/root/.kube/config
 
-	echo -e "\e[92mPreload Antra / MetalLB to prevent setup timing issues\e[37m"
-	docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
-	docker pull quay.io/metallb/controller:main
-	docker pull quay.io/metallb/speaker:main
+        if [ ${PRELOAD} == "True" ]; then
+          echo -e "\e[92mpreloading NSX container base images\e[37m"
+          docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+	  docker pull quay.io/metallb/controller:main
+	  docker pull quay.io/metallb/speaker:main
+        else
+	  echo -e "\e[92mpreloading NSX container base images\e[37m"
+	fi
 
 	# push VIP to metallb configmap
         sed -i -e 's\{{VIP}}\'$VIP'\g' /nappinstall/metallb-configmap.yaml
+
+	# push NFS Server IP to nfs-provisioner.yaml
+	sed -i -e 's\{{NFSSERVER}}\'$NODE_IP_ADDRESS'\g' /nappinstall/nfs-provisioner.yaml
 
 	# install Antrea/MetalLB/NFS Provisioner
 	echo -e "\e[92mSetting Up k8s services Antrea, MetalLB and NFS-Client-Provisioner\e[37m"
@@ -179,7 +190,7 @@ __CUSTOMIZE_PHOTON__
 	kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.5.0/antrea.yml
 	# setup metallb
 	kubectl create ns metallb-system
-	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12/manifests/metallb.yaml -n metallb-system
+	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml -n metallb-system
 	kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
 	kubectl apply -f /nappinstall/metallb-configmap.yaml
 
