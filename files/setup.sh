@@ -38,6 +38,7 @@ else
     PODNET_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.podnet")
     PRELOAD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.preload")
     NAPPFQDN_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappfqdn")
+    NAPPAUTODEPLOY_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappautodeploy")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
     PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4)
@@ -68,6 +69,7 @@ else
     VIP=$(echo "${VIP_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     PODNET=$(echo "${PODNET_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NAPPFQDN=$(echo "${NAPPFQDN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    NAPPAUTODEPLOY=$(echo "${NAPPAUTODEPLOY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NTP_SERVER=$(echo "${NTP_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     echo -e "\e[92mConfiguring Static IP Address ...\e[37m"
     cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
@@ -109,8 +111,8 @@ __CUSTOMIZE_PHOTON__
 	sshpass -e ssh-copy-id -i /root/.ssh/id_rsa ${MASTER_IP_ADDRESS}
 	
 	tar -xzf /root/nappinstall.tgz -C /
-	#mkdir -p /nappinstall
 	
+	#mkdir -p /nappinstall
 	#echo "export nsxmanager=${NSXMGR}" > /nappinstall/variables.txt
 	#echo "export nsxuser=${NSXUSER}" >> /nappinstall/variables.txt
 	#echo "export nsxpasswd='${NSXPASSWORD}'" >> /nappinstall/variables.txt 
@@ -167,10 +169,16 @@ __CUSTOMIZE_PHOTON__
 	scp ${MASTER_IP_ADDRESS}:/etc/kubernetes/admin.conf /root/.kube/config
  	chown $(id -u):$(id -g) /root/.kube/config
 	export KUBECONFIG=/root/.kube/config
+  
+	echo -e "\e[92mLoading Antrea Image into local Docker Image Repo (Master&Node)\e[37m"
+	docker load -i /nappinstall/antrea-ubuntu:v1.5.0.tar
+	scp /nappinstall/antrea-ubuntu:v1.5.0.tar ${MASTER_IP_ADDRESS}:/nappinstall
+	ssh ${MASTER_IP_ADDRESS} docker load -i /nappinstall/antrea-ubuntu:v1.5.0.tar
+
 
         if [ ${PRELOAD} == "True" ]; then
           echo -e "\e[92mpreloading NSX container base images\e[37m"
-          docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+          #docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
 	  docker pull quay.io/metallb/controller:main
 	  docker pull quay.io/metallb/speaker:main
         else
@@ -206,10 +214,25 @@ __CUSTOMIZE_PHOTON__
 	fi
 
 	echo -e "\e[92mPreparing NSX Manager NAPP Settings\e[37m"
-        sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-install-nsx.sh
-        sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' /nappinstall/napp-install-nsx.sh
-        sed -i -e 's\{{nsxmanager}}\'$NSXMGR'\g' /nappinstall/napp-install-nsx.sh
-        sed -i -e 's\{{nappfqdn}}\'$NAPPFQDN'\g' /nappinstall/napp-install-nsx.sh
+        sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' /nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nsxmanager}}\'$NSXMGR'\g' /nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nappfqdn}}\'$NAPPFQDN'\g' /nappinstall/napp-prepare-nsx.sh
+
+        sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-deploy-nsx.sh
+        sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' /nappinstall/napp-deploy-nsx.sh
+        sed -i -e 's\{{nsxmanager}}\'$NSXMGR'\g' /nappinstall/napp-deploy-nsx.sh
+
+	echo -e "\e[92mPreparing NAPP Deployment on NSX Manager\e[37m"
+	bash /nappinstall/napp-prepare-nsx.sh
+
+        #start NAPP Deployment on NSX Manager
+	if [ ${NAPPAUTODEPLOY} == "True" ]; then
+	  echo -e "\e[92mStarting NAPP Deployment on NSX Manager\e[37m"
+	  bash /nappinstall/napp-deploy-nsx.sh
+	else
+	  echo -e "\e[92mNAPP Platform will not Auto Deploy. You need to start manually on NSX MGR\e[37m"
+	fi
 
         #preload container base images
 	if [ ${PRELOAD} == "True" ]; then

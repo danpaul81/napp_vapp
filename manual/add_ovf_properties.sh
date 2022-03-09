@@ -86,6 +86,13 @@ EOF
     #modify original vmdisk1/vmdisk2 to vmdisk2/vmdisk4
     sed -i "s/vmdisk2/vmdisk4/g" $VIRTUALSYSTEM2_TEMP
     sed -i "s/vmdisk1/vmdisk2/g" $VIRTUALSYSTEM2_TEMP
+    
+    #modify CPU settings for node
+    sed -i "s/2 virtual CPU(s)/16 virtual CPU(s)/g" $VIRTUALSYSTEM2_TEMP
+    sed -i "s/VirtualQuantity>2</VirtualQuantity>16</g" $VIRTUALSYSTEM2_TEMP
+    #modify RAM Settings for node
+    sed -i "s/4096MB of memory/65536MB of memory/g" $VIRTUALSYSTEM2_TEMP
+    sed -i "s/VirtualQuantity>4096</VirtualQuantity>65536</g" $VIRTUALSYSTEM2_TEMP
 
     cat >>$VIRTUALSYSTEM2_TEMP <<EOF
     <ProductSection>
