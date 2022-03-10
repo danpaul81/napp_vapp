@@ -196,12 +196,12 @@ __CUSTOMIZE_PHOTON__
 
 	# setup antrea
 	kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.5.0/antrea.yml
-	# setup metallb
-	#kubectl create ns metallb-system
-	#kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml -n metallb-system
+
+	# setup metallb. using 0.9.7 as 12.1 has issue with k8s 0.19
 	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.7/manifests/namespace.yaml
 	kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
-	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.7/manifests/metallb.yaml
+	#using local copy for deployment as online version refers to dockerhub (download quota...)
+	kubectl apply -f /nappinstall/metallb.yaml
 	kubectl apply -f /nappinstall/metallb-configmap.yaml
 
 	# nfs-provisioner
