@@ -6,7 +6,7 @@
   "iso_url": "https://packages.vmware.com/photon/4.0/Rev2/iso/photon-minimal-4.0-c001795b8.iso",
   "numvcpus": "2",
   "ramsize": "4096",
-  "disksize": "4000",
+  "disksize": "8000",
   "guest_username": "root",
   "guest_password": "VMware1!"
 }

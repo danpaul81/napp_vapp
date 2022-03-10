@@ -171,15 +171,15 @@ __CUSTOMIZE_PHOTON__
 	export KUBECONFIG=/root/.kube/config
   
 	echo -e "\e[92mLoading Antrea Image into local Docker Image Repo (Master&Node)\e[37m"
-	docker load -i /nappinstall/antrea-ubuntu:v1.5.0.tar
+	docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+	docker save -o /nappinstall/antrea-ubuntu:v1.5.0.tar projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+
 	scp /nappinstall/antrea-ubuntu:v1.5.0.tar ${MASTER_IP_ADDRESS}:/nappinstall
 	ssh ${MASTER_IP_ADDRESS} docker load -i /nappinstall/antrea-ubuntu:v1.5.0.tar
 
-
         if [ ${PRELOAD} == "True" ]; then
           echo -e "\e[92mpreloading NSX container base images\e[37m"
-          #docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
-	  docker pull quay.io/metallb/controller:main
+          docker pull quay.io/metallb/controller:main
 	  docker pull quay.io/metallb/speaker:main
         else
 	  echo -e "\e[92mpreloading NSX container base images\e[37m"
@@ -197,9 +197,11 @@ __CUSTOMIZE_PHOTON__
 	# setup antrea
 	kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.5.0/antrea.yml
 	# setup metallb
-	kubectl create ns metallb-system
-	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml -n metallb-system
+	#kubectl create ns metallb-system
+	#kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/manifests/metallb.yaml -n metallb-system
+	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.7/manifests/namespace.yaml
 	kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.7/manifests/metallb.yaml
 	kubectl apply -f /nappinstall/metallb-configmap.yaml
 
 	# nfs-provisioner
