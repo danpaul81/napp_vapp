@@ -1,7 +1,7 @@
     <ProductSection>
         <Info>Information about the installed software</Info>
-        <Product>NAPP vApp</Product>
-        <Vendor>Daniel²</Vendor>
+        <Product>{{ROLEPRODUCT}}</Product>
+        <Vendor>Daniel Stich and  Daniel Paul</Vendor>
         <Version>{{VERSION}}</Version>
         <ProductUrl>https://github.com/danpaul81/napp</ProductUrl>
         <Category>Networking</Category>
@@ -73,5 +73,9 @@
         <Property ovf:userConfigurable="true" ovf:value="False" ovf:type="boolean" ovf:key="guestinfo.debug">
           <Label>Debugging</Label>
           <Description>Enable Debugging</Description>
+        </Property>
+        <Property ovf:userConfigurable="false" ovf:value="{{ROLE}}" ovf:type="string" ovf:key="guestinfo.role">
+          <Label>NAPP Role</Label>
+          <Description>can be master or node</Description>
         </Property>
     </ProductSection>

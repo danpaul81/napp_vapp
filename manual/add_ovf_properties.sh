@@ -2,10 +2,12 @@
 
 
 #debug settings, comment on prod system
-PHOTON_APPLIANCE_NAME="NAPP_Appliance"
-FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
-PHOTON_NETWORK="OL_SEG_10"
-VAPP_OVF_TEMPLATE="vapp.xml.template"
+#PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+#FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+#PHOTON_NETWORK="OL_SEG_10"
+#PHOTON_VERSION="0.0.3"
+#VAPP_OVF_TEMPLATE="vapp.xml.template"
+#APP_OVF_TEMPLATE="app.xml.template"
 #
 
 ORIGPATH=$(pwd)
@@ -136,6 +138,8 @@ echo "VAPP manifests build"
 TEMPLATENETWORK=$(grep "Network ovf:name" $MASTER_APP_OVF |cut -d\" -f2)
 sed -i "s/${TEMPLATENETWORK}/VM_Network/g" $MASTER_APP_OVF
 
+sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_master\">/g" $MASTER_APP_OVF
+
 sed -i 's/<VirtualHardwareSection>/<VirtualHardwareSection ovf:transport="com.vmware.guestInfo">/g' $MASTER_APP_OVF
 sed -i "/    <\/vmw:BootOrderSection>/ r ${APP_OVF_TEMPLATE}" $MASTER_APP_OVF
 sed -i "s/{{VERSION}}/${PHOTON_VERSION}/g" $MASTER_APP_OVF
@@ -153,8 +157,13 @@ sed -i "s/4096MB of memory/65536MB of memory/g" $NODE_APP_OVF
 sed -i "s/VirtualQuantity>4096</VirtualQuantity>65536</g" $NODE_APP_OVF
 
 # STEP 2.3 assign Names to master / node VMs 
+sed -i "s/<Name>${PHOTON_APPLIANCE_NAME}<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_master<\/Name>/g" $MASTER_APP_OVF
+sed -i "s/<Name>${PHOTON_APPLIANCE_NAME}<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_node<\/Name>/g" $NODE_APP_OVF
+sed -i "s/{{ROLEPRODUCT}}/${PHOTON_APPLIANCE_NAME}_master/g" $MASTER_APP_OVF
+sed -i "s/{{ROLEPRODUCT}}/${PHOTON_APPLIANCE_NAME}_node/g" $NODE_APP_OVF
 
-
+sed -i "s/{{ROLE}}/master/g" $MASTER_APP_OVF
+sed -i "s/{{ROLE}}/node/g" $NODE_APP_OVF
 
 
 #####
@@ -164,24 +173,24 @@ sed -i "s/VirtualQuantity>4096</VirtualQuantity>65536</g" $NODE_APP_OVF
 #generate manifest with hash
 cd ${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}
 echo "Creating VAPP HASH"
-#openssl sha1 ${PHOTON_APPLIANCE_NAME}_vapp.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk > ${VAPP_MF}
+openssl sha1 ${PHOTON_APPLIANCE_NAME}_vapp.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk > ${VAPP_MF}
 echo "Creating APP Master HASH"
-#openssl sha1 ${PHOTON_APPLIANCE_NAME}_master_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${MASTER_APP_MF}
+openssl sha1 ${PHOTON_APPLIANCE_NAME}_master_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${MASTER_APP_MF}
 echo "Creating APP Node HASH"
-#openssl sha1 ${PHOTON_APPLIANCE_NAME}_node_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${NODE_APP_MF}
+openssl sha1 ${PHOTON_APPLIANCE_NAME}_node_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${NODE_APP_MF}
 cd $ORIGPATH
 
 echo "Build VAPP OVA"
-#ovftool ${VAPP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
-#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+ovftool ${VAPP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
 
 echo "Build Master OVA"
-#ovftool ${MASTER_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
-#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
+ovftool ${MASTER_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
+chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
 
 echo "Build Node OVA"
-#ovftool ${NODE_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
-#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
+ovftool ${NODE_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
+chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
 
 #rm -rf ${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}
 
