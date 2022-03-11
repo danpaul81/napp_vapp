@@ -1,33 +1,3 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vmw="http://www.vmware.com/schema/ovf" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">
-  <References>
-    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file1" ovf:size="{{DISKSIZE1}}"/>
-    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file2" ovf:size="{{DISKSIZE1}}"/>
-  </References>
-  <DiskSection>
-    <Info>List of the virtual disks</Info>
-    <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk1" ovf:capacity="8" ovf:fileRef="file1"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk2" ovf:capacity="8" ovf:fileRef="file2"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk3" ovf:capacity="10"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk4" ovf:capacity="1000"/>
-  </DiskSection>
-  <NetworkSection>
-    <Info>The list of logical networks</Info>
-    <Network ovf:name="{{NETWORK}}">
-      <Description>The VM network</Description>
-    </Network>
-  </NetworkSection>
-  <vmw:IpAssignmentSection>
-    <Info>Supported IP assignment schemes</Info>
-  </vmw:IpAssignmentSection>
-  <VirtualSystemCollection ovf:id="NAPP_VAPP">
-    <Info>A virtual system collection</Info>
-    <Name>NAPP vApp</Name>
-    <StartupSection>
-      <Info>Specifies the startup order of the application.</Info>
-      <Item ovf:startDelay="30" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_node" ovf:stopDelay="30" ovf:order="2"/>
-      <Item ovf:startDelay="30" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_master" ovf:stopDelay="30" ovf:order="1"/>
-    </StartupSection>
     <ProductSection>
         <Info>Information about the installed software</Info>
         <Product>NAPP vApp</Product>
@@ -100,7 +70,6 @@
           <Label>AutoDeploy NAPP</Label>
           <Description>Fully deploy NAPP in NSX MGR. If not selected NAPP deployment needs to be started manually</Description>
         </Property>
-
         <Property ovf:userConfigurable="true" ovf:value="False" ovf:type="boolean" ovf:key="guestinfo.debug">
           <Label>Debugging</Label>
           <Description>Enable Debugging</Description>

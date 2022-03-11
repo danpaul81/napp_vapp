@@ -9,8 +9,8 @@
     {
       "type": "vsphere-iso",
       "vm_name": "{{ user `vm_name` }}",
-      "guest_os_type": "other3xLinux64Guest",
-      "vm_version": "13",
+      "guest_os_type": "vmwarePhoton64Guest",
+      "vm_version": "15",
       "storage": [
        {
          "disk_size": "{{ user `disksize`}}",

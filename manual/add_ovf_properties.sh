@@ -2,10 +2,10 @@
 
 
 #debug settings, comment on prod system
-#PHOTON_APPLIANCE_NAME="NAPP_Appliance"
-#FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
-#PHOTON_NETWORK="OL_SEG_10"
-#VAPP_OVF_TEMPLATE="vapp.xml.template"
+PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+PHOTON_NETWORK="OL_SEG_10"
+VAPP_OVF_TEMPLATE="vapp.xml.template"
 #
 
 ORIGPATH=$(pwd)
@@ -16,10 +16,15 @@ cd $ORIGPATH
 VAPP_OVF=${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}_vapp.ovf
 VAPP_MF=${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}_vapp.mf
 
+MASTER_APP_OVF=${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}_master_app.ovf
+MASTER_APP_MF=${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}_master_app.mf
+
+NODE_APP_OVF=${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}_node_app.ovf
+NODE_APP_MF=${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}_node_app.mf
 
 # copy OVF files from packer output
 cp ${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}.ovf ${VAPP_OVF}
-
+cp ${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}/${PHOTON_APPLIANCE_NAME}.ovf ${MASTER_APP_OVF}
 
 #####
 ## STEP 1:  Modify files for vapp
@@ -56,7 +61,7 @@ sed -i "s/{{DISKSIZE1}}/${DISKSIZE1}/g" $VAPP_OVF
 #sed -i "s/{{DISKSIZE2}}/${DISKSIZE2}/g" $VAPP_OVF
 sed -i "s/{{NETWORK}}/${PHOTON_NETWORK}/g" $VAPP_OVF
 
-echo "replacements done"
+echo "VAPP replacements done"
 
 #setup Virtual System for napp master
     #modify name
@@ -104,7 +109,7 @@ EOF
     </ProductSection>
   </VirtualSystem>
 EOF
-echo "done virtual systems mods"
+echo "VAPP virtual systems mods done"
 
 cat $VIRTUALSYSTEM1_TEMP >>$VAPP_OVF
 cat $VIRTUALSYSTEM2_TEMP >>$VAPP_OVF
@@ -121,18 +126,62 @@ sed -i 's/<VirtualHardwareSection>/<VirtualHardwareSection ovf:transport="com.vm
 sed -i '/^      <vmw:ExtraConfig ovf:required="false" vmw:key="nvram".*$/d' $VAPP_OVF
 sed -i "/^    <File ovf:href=\"${PHOTON_APPLIANCE_NAME}-file1.nvram\".*$/d" $VAPP_OVF
 
+echo "VAPP manifests build"
 
 #####
-## STEP 2:  Create vapp & cleanup
+## STEP 2: create templates for single vm master / node appliances
+#####
+
+# STEP 2.1 Modify settings for master VM
+TEMPLATENETWORK=$(grep "Network ovf:name" $MASTER_APP_OVF |cut -d\" -f2)
+sed -i "s/${TEMPLATENETWORK}/VM_Network/g" $MASTER_APP_OVF
+
+sed -i 's/<VirtualHardwareSection>/<VirtualHardwareSection ovf:transport="com.vmware.guestInfo">/g' $MASTER_APP_OVF
+sed -i "/    <\/vmw:BootOrderSection>/ r ${APP_OVF_TEMPLATE}" $MASTER_APP_OVF
+sed -i "s/{{VERSION}}/${PHOTON_VERSION}/g" $MASTER_APP_OVF
+sed -i '/^      <vmw:ExtraConfig ovf:required="false" vmw:key="nvram".*$/d' $MASTER_APP_OVF
+sed -i "/^    <File ovf:href=\"${PHOTON_APPLIANCE_NAME}-file1.nvram\".*$/d" $MASTER_APP_OVF
+
+# STEP 2.2 clone Master VM Templates and customize HW settings for Node (CPU, RAM, DISK)
+cp $MASTER_APP_OVF $NODE_APP_OVF
+sed -i "s/<Disk ovf:capacity=\"10\" ovf:capacityAllocationUnits=\"byte \* 2^20/<Disk ovf:capacity=\"1000\" ovf:capacityAllocationUnits=\"byte \* 2^30/g" $NODE_APP_OVF
+#modify CPU settings for node
+sed -i "s/2 virtual CPU(s)/16 virtual CPU(s)/g" $NODE_APP_OVF
+sed -i "s/VirtualQuantity>2</VirtualQuantity>16</g" $NODE_APP_OVF
+#modify RAM Settings for node
+sed -i "s/4096MB of memory/65536MB of memory/g" $NODE_APP_OVF
+sed -i "s/VirtualQuantity>4096</VirtualQuantity>65536</g" $NODE_APP_OVF
+
+# STEP 2.3 assign Names to master / node VMs 
+
+
+
+
+#####
+## STEP 3:  Create vapp, appliances & cleanup
 #####
 
 #generate manifest with hash
 cd ${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}
-openssl sha1 ${PHOTON_APPLIANCE_NAME}_vapp.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk > ${VAPP_MF}
+echo "Creating VAPP HASH"
+#openssl sha1 ${PHOTON_APPLIANCE_NAME}_vapp.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk > ${VAPP_MF}
+echo "Creating APP Master HASH"
+#openssl sha1 ${PHOTON_APPLIANCE_NAME}_master_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${MASTER_APP_MF}
+echo "Creating APP Node HASH"
+#openssl sha1 ${PHOTON_APPLIANCE_NAME}_node_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${NODE_APP_MF}
 cd $ORIGPATH
 
-ovftool ${VAPP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
-chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+echo "Build VAPP OVA"
+#ovftool ${VAPP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+
+echo "Build Master OVA"
+#ovftool ${MASTER_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
+#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
+
+echo "Build Node OVA"
+#ovftool ${NODE_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
+#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
 
 #rm -rf ${OUTPUT_PATH}/${PHOTON_APPLIANCE_NAME}
 
