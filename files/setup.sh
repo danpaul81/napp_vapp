@@ -93,6 +93,7 @@ __CUSTOMIZE_PHOTON__
 	echo "Empty password setting. No Change"
     else
         echo "root:${ROOT_PASSWORD}" | /usr/sbin/chpasswd
+	#echo "temp pwd off"
     fi
 
     echo -e "\e[92mSetting up NTP\e[37m"

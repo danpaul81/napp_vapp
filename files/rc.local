@@ -3,5 +3,5 @@
 if [ -e /root/ran_customization ]; then
     exit
 else
-    /root/setup.sh | tee /var/log/photon-customization.log /dev/console
+    /root/setup.sh 2>&1 | tee /var/log/photon-customization.log /dev/console /dev/tty7
 fi

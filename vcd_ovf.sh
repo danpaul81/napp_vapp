@@ -1,4 +1,8 @@
-ovftool --noSSLVerify --I:targetSessionTicket=84e75c943e294e53bcca0134cbf7175a --diskMode=thin  \
+#!/bin/bash
+
+SESSIONID=6da64e4ea7284b89aec6d38840822144
+
+#ovftool --noSSLVerify --I:targetSessionTicket=$SESSIONID --diskMode=thin  \
 --prop:guestinfo.master_ip='192.168.110.210' \
 --prop:guestinfo.node_ip='192.168.110.211' \
 --prop:guestinfo.netmask='24' \
@@ -19,7 +23,7 @@ ovftool --noSSLVerify --I:targetSessionTicket=84e75c943e294e53bcca0134cbf7175a -
 --prop:guestinfo.role='master' \
 output-vsphere-iso/NAPP_Appliance_0.0.2_master_app.ova 'vcloud://ams2-vcd01.oc.vmware.com/cloud?org=ams2-vcd01-emea-sddc-lt-labs-t&vdc=ams2-vcd01-emea-sddc-lt-labs-d-ovdc1&vapp=NAPP_MASTER'
 
-ovftool --noSSLVerify --I:targetSessionTicket=84e75c943e294e53bcca0134cbf7175a --diskMode=thin  \
+ovftool --noSSLVerify --I:targetSessionTicket=$SESSIONID --diskMode=thin  \
 --prop:guestinfo.master_ip='192.168.110.210' \
 --prop:guestinfo.node_ip='192.168.110.211' \
 --prop:guestinfo.netmask='24' \
