@@ -1,4 +1,7 @@
-# Reference for building PhotonOS Virtual Appliance (OVA) using Packer
+VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
+
+
+# Based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
 
 Based on William Lams Packer PhotonOS Appliance (https://github.com/lamw/photonos-appliance)
 
