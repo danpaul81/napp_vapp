@@ -1,7 +1,7 @@
-VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
+#VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 
 
-# Based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
+## Image creation scripts based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
 
 Based on William Lams Packer PhotonOS Appliance (https://github.com/lamw/photonos-appliance)
 
@@ -13,6 +13,7 @@ Based on William Lams Packer PhotonOS Appliance (https://github.com/lamw/photono
 * [Packer](https://www.packer.io/intro/getting-started/install.html)
 * [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7.1)
 * [PowerCli](https://developer.vmware.com/powercli)
+* [xmlstarlet](http://xmlstar.sourceforge.net)
 
 
 > `packer` builds the OVA on a remote ESXi host via the [`vsphere-iso`](https://www.packer.io/docs/builders/vsphere-iso.html) builder. 
