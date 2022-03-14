@@ -1,4 +1,4 @@
-#VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
+# VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 
 
 ## Image creation scripts based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
