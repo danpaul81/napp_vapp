@@ -12,7 +12,10 @@ systemctl enable docker
 echo '> Start Docker'
 systemctl start docker
 
+#disable cloud init as VCD tries to exec it
+systemctl disable cloud-init.service
 systemctl disable iptables
+
 
 #echo '> Loading Docker Images'
 #docker pull harbor-repo.vmware.com/dpaul/idsreplay:latest
