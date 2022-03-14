@@ -80,7 +80,7 @@ Name=e*
 Address=${IP_ADDRESS}/${NETMASK}
 Gateway=${GATEWAY}
 DNS=${DNS_SERVER}
-Domain=${DNS_DOMAIN}
+Domains=${DNS_DOMAIN}
 __CUSTOMIZE_PHOTON__
 
     echo -e "\e[92mRestarting Network ...\e[37m"
