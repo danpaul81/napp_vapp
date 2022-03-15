@@ -100,9 +100,4 @@
           <Label>AutoDeploy NAPP</Label>
           <Description>Fully deploy NAPP in NSX MGR. If not selected NAPP deployment needs to be started manually</Description>
         </Property>
-
-        <Property ovf:userConfigurable="true" ovf:value="False" ovf:type="boolean" ovf:key="guestinfo.debug">
-          <Label>Debugging</Label>
-          <Description>Enable Debugging</Description>
-        </Property>
     </ProductSection>

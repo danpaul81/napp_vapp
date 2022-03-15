@@ -23,7 +23,6 @@ COMMONOPTS='--noSSLVerify --diskMode=thin
 --prop:guestinfo.domain=corp.local 
 --prop:guestinfo.ntp=192.168.110.10
 --prop:guestinfo.root_password=VMware1!VMware1! 
---prop:guestinfo.debug=False 
 --prop:guestinfo.preload=True 
 --prop:guestinfo.nappautodeploy=True  
 --prop:guestinfo.vip_pool=192.168.110.215-192.168.110.220  
