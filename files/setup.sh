@@ -152,7 +152,7 @@ __CUSTOMIZE_PHOTON__
 
 	# check if node1 is ready 
 	set +e
-	echo -e "\e[92mChecking if node1 is online (ping every 10sec) $NODE_IP_ADDRESS \e[37m"
+	echo -e "\e[92mChecking if node1 is online (ping every 30sec) $NODE_IP_ADDRESS \e[37m"
 
 	COUNT=1
 	while [[ $COUNT -eq 1 ]]; do
@@ -162,9 +162,10 @@ __CUSTOMIZE_PHOTON__
                 COUNT=0
     	    else
                 COUNT=1
-		echo -e "\e[92mNO answer from $NODE_IP_ADDRESS. retry in 10sec \e[37m"
+		echo -e "\e[92mNO answer from $NODE_IP_ADDRESS. retry in 30sec \e[37m"
     	    fi
-	sleep 10s
+	#wait 30s even if successful
+	sleep 30s
 	done
 	echo -e "\e[92mGot response from node1. Copy SSH Key\e[37m"
 
@@ -180,10 +181,10 @@ __CUSTOMIZE_PHOTON__
             if [[ $rc -eq 0 ]]; then
                 COUNT=0
             else
-                echo -e "\e[92mstill checking if Node1 has finished its base setup. retry in 10sec \e[37m"
+                echo -e "\e[92mstill checking if node1 has finished its base setup. retry in 30sec \e[37m"
 		COUNT=1
+		sleep 30s
             fi
-        sleep 10s
         done
         echo -e "\e[92mGot response from node1. Load Base k8s images and do cluster join\e[37m"
 	
@@ -221,7 +222,7 @@ __CUSTOMIZE_PHOTON__
 
 # check if node one has finished base image preload
 	set +e
-	echo -e "\e[92mChecking if node1 has finished loading NSX base images\e[37m"
+	echo -e "\e[92mChecking if node1 has finished loading NSX base images. This may take >60min\e[37m"
 
         COUNT=1
         while [[ $COUNT -eq 1 ]]; do
@@ -230,10 +231,10 @@ __CUSTOMIZE_PHOTON__
             if [[ $rc -eq 0 ]]; then
                 COUNT=0
             else
-                echo -e "\e[92mstill checking if node1 has finished loading base images. retry in 60sec \e[37m"
+                echo -e "$(date) \e[92mstill checking if node1 has finished loading base images. retry in 5min \e[37m"
 		COUNT=1
+		sleep 5m
             fi
-        sleep 60s
         done
         echo -e "\e[92mGot response from node1. Starting NSX manager setup\e[37m"
 	
@@ -302,8 +303,11 @@ __CUSTOMIZE_PHOTON__
         #preload container base images
 	if [ ${PRELOAD} == "True" ]; then
 	  echo -e "\e[92mpreloading NSX container base images\e[37m"
+	  # if image pre-load fail it can still be loaded from nsx manager setup
+	  set +e
 	  bash /nappinstall/download-base-images.sh
-	else
+	  set -e
+  	else
 	  echo -e "\e[92mno NSX container preload for base images selected\e[37m"
 	fi
 	touch /nappinstall/READY_BASE_IMAGES
@@ -311,8 +315,10 @@ __CUSTOMIZE_PHOTON__
         #preload container application images
 	if [ ${PRELOAD} == "True" ]; then
 	  echo -e "\e[92mpreloading NSX application platform container images\e[37m"
+	  set +e
 	  bash /nappinstall/download-solution-images.sh
-	else
+	  set -e
+  	else
 	  echo -e "\e[92mno NSX container preload for solution images selected\e[37m"
 	fi
 	touch /nappinstall/READY_APPLICATION_IMAGES
