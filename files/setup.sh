@@ -89,6 +89,10 @@ __CUSTOMIZE_PHOTON__
     echo -e "\e[92mConfiguring root password ...\e[37m"
     ROOT_PASSWORD=$(echo "${ROOT_PASSWORD_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
 	
+
+    # disable PW quality check
+    sed -i -e 's\# enforcing = 1\enforcing = 0\g'  /etc/security/pwquality.conf
+    
     if [ -z "${ROOT_PASSWORD}" ]; then
 	echo "Empty password setting. No Change"
     else
