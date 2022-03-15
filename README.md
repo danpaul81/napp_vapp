@@ -24,7 +24,7 @@ Based on William Lams Packer PhotonOS Appliance (https://github.com/lamw/photono
 `photon.json` packer main config file
 `photon-dev.json` identical to `photon.json` but additionally deploys newly created OVA appliance(s) to a vCenter Server
 
-idsreplay specific modifications are done in files/setup.sh
+NAPP specific modifications are done in files/setup.sh
 
 ```
 ./build.sh

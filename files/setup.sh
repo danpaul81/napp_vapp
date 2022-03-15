@@ -95,17 +95,13 @@ __CUSTOMIZE_PHOTON__
     if [ ${ROLE} == "master" ]; then
 	# preparation of node -> will also setup master
 	echo -e "\e[92m Role: k8s master\e[37m"
-	export SSHPASS=${ROOT_PASSWORD}
 	
 	# create SSH Passphrase. Host Key checking is already disabled
 	ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
 	
-
-
-	
 	tar -xzf /root/nappinstall.tgz -C /
 	
-	echo -e "\e[92mprepare k8s master node script\e[37m"
+	echo -e "\e[92mprepare k8s cluster\e[37m"
 	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
 	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
 	sed -i -e 's\{{K8SMASTER}}\'$MASTER_IP_ADDRESS'\g' /nappinstall/k8s-master-setup.sh
@@ -156,7 +152,7 @@ __CUSTOMIZE_PHOTON__
 
 	# check if node1 is ready 
 	set +e
-	echo -e "\e[92mTrying now infinite to ping node1 $NODE_IP_ADDRESS \e[37m"
+	echo -e "\e[92mChecking if node1 is online (ping every 10sec) $NODE_IP_ADDRESS \e[37m"
 
 	COUNT=1
 	while [[ $COUNT -eq 1 ]]; do
@@ -166,25 +162,28 @@ __CUSTOMIZE_PHOTON__
                 COUNT=0
     	    else
                 COUNT=1
+		echo -e "\e[92mNO answer from $NODE_IP_ADDRESS. retry in 10sec \e[37m"
     	    fi
-	sleep 1
+	sleep 10s
 	done
 	echo -e "\e[92mGot response from node1. Copy SSH Key\e[37m"
+
+	export SSHPASS=${ROOT_PASSWORD}
 	sshpass -e ssh-copy-id -i /root/.ssh/id_rsa ${NODE_IP_ADDRESS}
 
 	echo -e "\e[92mChecking if Node1 has finished its base setup \e[37m"
 
         COUNT=1
         while [[ $COUNT -eq 1 ]]; do
-                ssh $NODE_IP_ADDRESS test -f /nappinstall/READY_BASE
+                ssh ${NODE_IP_ADDRESS} test -f /nappinstall/READY_BASE
                 rc=$?
             if [[ $rc -eq 0 ]]; then
                 COUNT=0
             else
-                echo -e "\e[92mstill checking if Node1 has finished its base setup. retry in 5sec \e[37m"
+                echo -e "\e[92mstill checking if Node1 has finished its base setup. retry in 10sec \e[37m"
 		COUNT=1
             fi
-        sleep 5
+        sleep 10s
         done
         echo -e "\e[92mGot response from node1. Load Base k8s images and do cluster join\e[37m"
 	
@@ -221,7 +220,24 @@ __CUSTOMIZE_PHOTON__
 
 
 # check if node one has finished base image preload
+	set +e
+	echo -e "\e[92mChecking if node1 has finished loading NSX base images\e[37m"
 
+        COUNT=1
+        while [[ $COUNT -eq 1 ]]; do
+                ssh ${NODE_IP_ADDRESS} test -f /nappinstall/READY_BASE_IMAGES
+                rc=$?
+            if [[ $rc -eq 0 ]]; then
+                COUNT=0
+            else
+                echo -e "\e[92mstill checking if node1 has finished loading base images. retry in 60sec \e[37m"
+		COUNT=1
+            fi
+        sleep 60s
+        done
+        echo -e "\e[92mGot response from node1. Starting NSX manager setup\e[37m"
+	
+	set -e
 
 	echo -e "\e[92mPreparing NSX Manager NAPP Settings\e[37m"
         sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-prepare-nsx.sh
@@ -243,7 +259,6 @@ __CUSTOMIZE_PHOTON__
 	else
 	  echo -e "\e[92mNAPP Platform will not Auto Deploy. You need to start manually on NSX MGR\e[37m"
 	fi
-        
 	echo -e "\e[92mFinished master setup script\e[37m"
 
     else
@@ -282,7 +297,7 @@ __CUSTOMIZE_PHOTON__
 	systemctl start nfs-server.service
 
 	echo -e "\e[92mFinished Base Setup\e[37m"
-	#touch /nappinstall/READY_BASE
+	touch /nappinstall/READY_BASE
 
         #preload container base images
 	if [ ${PRELOAD} == "True" ]; then
