@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #session ID on VCD
-SESSIONID=773d6881edc14234aef20625145aa0fc
+SESSIONID=18de5e9ee58e47f8b36e9ae4bdb2806c
 
 #local path to ova sources
-SOURCE_MASTER='output-vsphere-iso/NAPP_Appliance_0.1.0_master_app.ova'
-SOURCE_NODE='output-vsphere-iso/NAPP_Appliance_0.1.0_node_app.ova'
+SOURCE_MASTER='output-vsphere-iso/NAPP_Appliance_0.1.1_master_app.ova'
+SOURCE_NODE='output-vsphere-iso/NAPP_Appliance_0.1.1_node_app.ova'
 
 #VCD URL/org/vdc/vapp
 #important: select different VAPP names for master/node
