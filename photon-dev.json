@@ -22,7 +22,7 @@
     "ovftool_deploy_vm_vcenter_username": "administrator@vsphere.local",
     "ovftool_deploy_vm_vcenter_password": "VMware1!",
     "ovftool_deploy_vm_network": "OL_SEG_10",
-    "ovftool_deploy_localcache": "10.124.48.61"
+    "ovftool_deploy_localcache": "10.124.48.61",
     "ovftool_deploy_vm_datastore": "DS2"
   },
   "builders": [
