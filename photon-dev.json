@@ -22,6 +22,7 @@
     "ovftool_deploy_vm_vcenter_username": "administrator@vsphere.local",
     "ovftool_deploy_vm_vcenter_password": "VMware1!",
     "ovftool_deploy_vm_network": "OL_SEG_10",
+    "ovftool_deploy_localcache": "10.124.48.61"
     "ovftool_deploy_vm_datastore": "DS2"
   },
   "builders": [
@@ -117,7 +118,7 @@
     {
       "type": "shell-local",
       "inline": [
-        "ovftool --noSSLVerify --powerOn  --diskMode=thin --name={{ user `ovftool_deploy_vapp_name` }} --net:'VM_Network={{ user `ovftool_deploy_vm_network` }}' --datastore={{ user `ovftool_deploy_vm_datastore` }}  --prop:guestinfo.master_ip={{ user `ovftool_deploy_vm_ip_master` }} --prop:guestinfo.node_ip={{ user `ovftool_deploy_vm_ip_node` }} --prop:guestinfo.netmask={{ user `ovftool_deploy_vm_prefix` }} --prop:guestinfo.gateway={{ user `ovftool_deploy_vm_gateway` }} --prop:guestinfo.dns={{ user `ovftool_deploy_vm_dns` }} --prop:guestinfo.domain={{ user `ovftool_deploy_vm_dns_domain` }} --prop:guestinfo.root_password={{ user `ovftool_deploy_vm_root_password` }} --prop:guestinfo.vip_pool={{ user `ovftool_deploy_vip` }} --prop:guestinfo.preload=True --prop:guestinfo.nappautodeploy=False output-vsphere-iso/{{ user `vm_name` }}_{{user `version`}}_vapp.ova 'vi://{{ user `ovftool_deploy_vcenter_username` }}:{{ user `ovftool_deploy_vcenter_password` }}@{{ user `ovftool_deploy_vcenter` }}/{{ user `ovftool_deploy_datacenter` }}/host/{{ user `ovftool_deploy_cluster` }}/'"
+        "ovftool --noSSLVerify --powerOn  --diskMode=thin --name={{ user `ovftool_deploy_vapp_name` }} --net:'VM_Network={{ user `ovftool_deploy_vm_network` }}' --datastore={{ user `ovftool_deploy_vm_datastore` }}  --prop:guestinfo.master_ip={{ user `ovftool_deploy_vm_ip_master` }} --prop:guestinfo.node_ip={{ user `ovftool_deploy_vm_ip_node` }} --prop:guestinfo.netmask={{ user `ovftool_deploy_vm_prefix` }} --prop:guestinfo.gateway={{ user `ovftool_deploy_vm_gateway` }} --prop:guestinfo.dns={{ user `ovftool_deploy_vm_dns` }} --prop:guestinfo.domain={{ user `ovftool_deploy_vm_dns_domain` }} --prop:guestinfo.root_password={{ user `ovftool_deploy_vm_root_password` }} --prop:guestinfo.vip_pool={{ user `ovftool_deploy_vip` }}  --prop:guestinfo.localcache={{ user `ovftool_deploy_localcache` }} --prop:guestinfo.preload=True --prop:guestinfo.nappautodeploy=False output-vsphere-iso/{{ user `vm_name` }}_{{user `version`}}_vapp.ova 'vi://{{ user `ovftool_deploy_vcenter_username` }}:{{ user `ovftool_deploy_vcenter_password` }}@{{ user `ovftool_deploy_vcenter` }}/{{ user `ovftool_deploy_datacenter` }}/host/{{ user `ovftool_deploy_cluster` }}/'"
       ]
     },
     {

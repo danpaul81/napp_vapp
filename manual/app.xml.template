@@ -70,6 +70,10 @@
           <Label>AutoDeploy NAPP</Label>
           <Description>Fully deploy NAPP in NSX MGR. If not selected NAPP deployment needs to be started manually</Description>
         </Property>
+        <Property ovf:userConfigurable="true"  ovf:type="string" ovf:key="guestinfo.localcache">
+          <Label>Localcache IP (optional)</Label>
+          <Description>optional IP Address of local image cache to speed-up deployment</Description>
+        </Property>
         <Property ovf:userConfigurable="false" ovf:value="{{ROLE}}" ovf:type="string" ovf:key="guestinfo.role">
           <Label>NAPP Role</Label>
           <Description>can be master or node</Description>

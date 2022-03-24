@@ -26,6 +26,7 @@ else
     PRELOAD_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.preload")
     NAPPFQDN_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappfqdn")
     NAPPAUTODEPLOY_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappautodeploy")
+    LOCALCACHE_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.localcache")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
     PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4)
@@ -58,6 +59,8 @@ else
     NAPPFQDN=$(echo "${NAPPFQDN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NAPPAUTODEPLOY=$(echo "${NAPPAUTODEPLOY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NTP_SERVER=$(echo "${NTP_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    LOCALCACHE=$(echo "${LOCALCACHE_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+
     echo -e "\e[92mConfiguring Static IP Address ...\e[37m"
     cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
 [Match]
@@ -308,6 +311,30 @@ __CUSTOMIZE_PHOTON__
 
 	echo -e "\e[92mFinished Base Setup\e[37m"
 	touch /nappinstall/READY_BASE
+
+
+	#if localcache exists try to download packages
+	if ! [ -z "${LOCALCACHE}" ]; then
+		echo -e "\e[92mLocalCache is set. Trying to download package\e[37m"
+		set +e
+		wget -P /nfs http://${LOCALCACHE}/napp-images.tgz
+		rc=$?
+		if [[ $rc -eq 0 ]]; then
+			echo -e "\e[92mUnpacking LocalCache Package & removing download\e[37m"
+			tar -xvf /nfs/napp-images.tgz -C /nfs
+			rm /nfs/napp-images.tgz
+			echo -e "\e[92mImporting LocalCache Package\e[37m"
+			bash /nfs/napp-images/load_docker_images.sh
+			echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
+			rm -rf /nfs/napp-iamges
+		else 
+			echo -e "\e[92mDownload from LocalCache failed. Continuing\e[37m"
+		fi		
+		set -e
+	else
+        	echo -e "\e[92mLocalCache NOT set.\e[37m"
+	fi
+
 
         #preload container base images
 	if [ ${PRELOAD} == "True" ]; then
