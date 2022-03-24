@@ -273,7 +273,7 @@ __CUSTOMIZE_PHOTON__
 	mkfs.ext4 /dev/sdb1
 	mkdir -p /nfs
 	mount /dev/sdb1 /nfs
-	echo '/dev/sdb1       /nfs    ext4    defaults     0   0' | sudo tee -a /etc/fstab
+	echo '/dev/sdb1       /nfs    ext4    defaults     0   0' | tee -a /etc/fstab
 
 	# re-mount docker / kubelet datadir to data disk
 	echo -e "\e[92mre-mount Docker / Kubelet storage\e[37m"
@@ -281,12 +281,21 @@ __CUSTOMIZE_PHOTON__
 	systemctl stop docker
 	rm -rf /var/lib/docker
 	rm -rf /var/lib/kubelet
+
 	mkdir /var/lib/docker
-	mkdir /var/lib/kubelet/
+	mkdir /var/lib/kubelet
+
 	mkdir /nfs/docker
 	mkdir /nfs/kubelet
-	mount --rbind /nfs/docker/ /var/lib/docker
-	mount --rbind /nfs/kubelet/ /var/lib/kubelet
+	#mount --rbind /nfs/docker/ /var/lib/docker
+	#mount --rbind /nfs/kubelet/ /var/lib/kubelet
+	
+        echo '/nfs/docker     /var/lib/docker  none  defaults,rbind    0   0' | tee -a /etc/fstab
+        echo '/nfs/kubelet    /var/lib/kubelet none  defaults,rbind    0   0' | tee -a /etc/fstab
+	mount /nfs/docker
+	mount /nfs/kubelet
+
+	
 	systemctl start docker
 	systemctl restart kubelet
 
