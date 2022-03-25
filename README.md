@@ -1,4 +1,6 @@
 # VAPP / OVA Images including all infrastructure needed to deploy NSX 3.2 Application Platform
+
+## This documentation is not yet finished. please refer to existing internal word doc
 ## Introduction 
 
 This guide takes you through the process of deploying the NSX Application Platform. 
@@ -36,10 +38,24 @@ vSphere DRS must be enabled in the Cluster where you want to deply NAPP even if 
 
 * NAPP_VAPP can be deployed in a VLAN based DVPG or NSX VLAN/Overlay Segment. Default Gateway must work and internet connection must be possible.  
 
+## Setup NSX vAPP in vCenter 
+
+After you have downloaded the vAPP OVA from [releases] (https://github.com/danpaul81/napp_vapp/releases/) 
+
+### Install vAPP 
+
+Like with all other vAPPS you need to select the Template, Folder, Compute Resource, Storage and the belonging Network. 
+Customize Template is the important part. Change the settings to your environment. Please check the picture above if you need to understand which IP is used where.
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/customize_ip.png?raw=true)
+
+We recognized some Issues while deploying if the Internet Connection is slow. So you can decide to load alle Images upfront to the Node - the checkbox is enabled by default. Be aware it could take a couple of hours before you see something happen in NSX. You can also choose to start the NSX Application deployment fully automated. 
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/customize_preload.png?raw=true)
 
 
 
-# VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
+## VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 more documentation to be added here
 
 ### Image creation scripts based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
