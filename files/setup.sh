@@ -121,18 +121,18 @@ __CUSTOMIZE_PHOTON__
 
         #if localcache exists try to download kubernetes packages
         if ! [ -z "${LOCALCACHE}" ]; then
-                echo -e "\e[92mLocalCache is set. Trying to download k8s base package\e[37m"
+		echo -e "$(date) \e[92mLocalCache is set. Trying to download k8s base package. can take >10 min\e[37m"
                 set +e
-                wget -nv -P /nfs http://${LOCALCACHE}/base-images.tgz
+                wget -nv -P /nappinstall http://${LOCALCACHE}/base-images.tgz
                 rc=$?
                 if [[ $rc -eq 0 ]]; then
                         echo -e "\e[92mUnpacking LocalCache Package & removing download\e[37m"
-                        tar -xvf /nfs/base-images.tgz -C /nfs
-                        rm /nfs/base-images.tgz
+                        tar -xvf /nappinstall/base-images.tgz -C /nfs
+                        rm /nappinstall/base-images.tgz
                         echo -e "\e[92mImporting LocalCache Package\e[37m"
-                        bash /nfs/base-images/load_docker_images.sh
-                        echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
-                        rm -rf /nfs/base-images
+			( cd /nappinstall/base-images && bash /nappinstall/base-images/load_docker_images.sh )
+                        echo -e "\e[92mRemoving LocalCache Download/Directory\e[37m"
+                        rm -rf /nappinstall/base-images
                 else
                         echo -e "\e[92mDownload from LocalCache failed. Continuing\e[37m"
                 fi
@@ -144,13 +144,8 @@ __CUSTOMIZE_PHOTON__
 	if [ ${PRELOAD} == "True" ]; then
 	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo\e[37m"
 	    docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
-	    docker save -o /nappinstall/antrea-ubuntu:v1.5.0.tar projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
-    
     	    docker pull quay.io/metallb/controller:v0.9.7
-	    docker save -o /nappinstall/controller:v0.9.7.tar quay.io/metallb/controller:v0.9.7        
-
 	    docker pull quay.io/metallb/speaker:v0.9.7
-	    docker save -o /nappinstall/speaker:v0.9.7.tar quay.io/metallb/speaker:v0.9.7
 	else
 	    echo -e "\e[92mNO pre-loading Antrea/Metallb Image into local Docker Image Repo\e[37m"
 	fi
@@ -214,8 +209,14 @@ __CUSTOMIZE_PHOTON__
         echo -e "\e[92mGot response from node1. Load Base k8s images and do cluster join\e[37m"
 	
 	set -e
-	if [ ${PRELOAD} == "True" ]; then
+	# preload is set and localcache not used. copy bass images to node
+	if [ ${PRELOAD} == "True" ] && [ -z "$LOCALCACHE}" ]; then
 	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo of node\e[37m"
+  
+	    docker save -o /nappinstall/antrea-ubuntu:v1.5.0.tar projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
+	    docker save -o /nappinstall/controller:v0.9.7.tar quay.io/metallb/controller:v0.9.7
+	    docker save -o /nappinstall/speaker:v0.9.7.tar quay.io/metallb/speaker:v0.9.7
+   
 	    scp /nappinstall/antrea-ubuntu:v1.5.0.tar ${NODE_IP_ADDRESS}:/nappinstall
 	    scp /nappinstall/controller:v0.9.7.tar ${NODE_IP_ADDRESS}:/nappinstall
 	    scp /nappinstall/speaker:v0.9.7.tar ${NODE_IP_ADDRESS}:/nappinstall
@@ -333,7 +334,7 @@ __CUSTOMIZE_PHOTON__
 
         #if localcache exists try to download kubernetes packages
         if ! [ -z "${LOCALCACHE}" ]; then
-                echo -e "\e[92mLocalCache is set. Trying to download k8s base package\e[37m"
+		echo -e "$(date) \e[92mLocalCache is set. Trying to download k8s base package. Can take >10min\e[37m"
                 set +e
                 wget -nv -P /nfs http://${LOCALCACHE}/base-images.tgz
                 rc=$?
@@ -342,8 +343,8 @@ __CUSTOMIZE_PHOTON__
                         tar -xvf /nfs/base-images.tgz -C /nfs
                         rm /nfs/base-images.tgz
                         echo -e "\e[92mImporting LocalCache Package\e[37m"
-                        bash /nfs/base-images/load_docker_images.sh
-                        echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
+			( cd /nfs/base-images && bash /nfs/base-images/load_docker_images.sh )
+                        echo -e "\e[92mRemoving LocalCache Download/Directory\e[37m"
                         rm -rf /nfs/base-images
                 else
                         echo -e "\e[92mDownload from LocalCache failed. Continuing\e[37m"
@@ -358,7 +359,7 @@ __CUSTOMIZE_PHOTON__
 
 	#if localcache exists try to download nsx packages
 	if ! [ -z "${LOCALCACHE}" ]; then
-		echo -e "\e[92mLocalCache is set. Trying to download package\e[37m"
+		echo -e "$(date) \e[92mLocalCache is set. Trying to download package. Can take >10min\e[37m"
 		set +e
 		wget -nv -P /nfs http://${LOCALCACHE}/napp-images.tgz
 		rc=$?
@@ -367,7 +368,7 @@ __CUSTOMIZE_PHOTON__
 			tar -xvf /nfs/napp-images.tgz -C /nfs
 			rm /nfs/napp-images.tgz
 			echo -e "\e[92mImporting LocalCache Package\e[37m"
-			bash /nfs/napp-images/load_docker_images.sh
+			( cd /nfs/napp-images && bash /nfs/napp-images/load_docker_images.sh )
 			echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
 			rm -rf /nfs/napp-images
 		else 
