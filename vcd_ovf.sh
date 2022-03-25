@@ -1,11 +1,12 @@
 #!/bin/bash
 
 #session ID on VCD
-SESSIONID=18de5e9ee58e47f8b36e9ae4bdb2806c
+SESSIONID=677a0ccc46a84a48a8ab91a07d930601
+
 
 #local path to ova sources
-SOURCE_MASTER='output-vsphere-iso/NAPP_Appliance_0.1.1_master_app.ova'
-SOURCE_NODE='output-vsphere-iso/NAPP_Appliance_0.1.1_node_app.ova'
+SOURCE_MASTER='output-vsphere-iso/NAPP_Appliance_0.1.2_master_app.ova'
+SOURCE_NODE='output-vsphere-iso/NAPP_Appliance_0.1.2_node_app.ova'
 
 #VCD URL/org/vdc/vapp
 #important: select different VAPP names for master/node
@@ -22,7 +23,7 @@ COMMONOPTS='--noSSLVerify --diskMode=thin
 --prop:guestinfo.dns=192.168.110.10
 --prop:guestinfo.domain=corp.local 
 --prop:guestinfo.ntp=192.168.110.10
---prop:guestinfo.root_password=VMware1!VMware1! 
+--prop:guestinfo.root_password=daniel1
 --prop:guestinfo.preload=True 
 --prop:guestinfo.nappautodeploy=True  
 --prop:guestinfo.vip_pool=192.168.110.215-192.168.110.220  
@@ -30,6 +31,7 @@ COMMONOPTS='--noSSLVerify --diskMode=thin
 --prop:guestinfo.nsxmanager=192.168.110.201  
 --prop:guestinfo.nsxuser=admin
 --prop:guestinfo.nsxpassword=VMware1!VMware1!  
+--prop:guestinfo.localcache=10.124.48.61
 --prop:guestinfo.podnet=172.25.0.0/16'
 
 ovftool --I:targetSessionTicket=$SESSIONID $COMMONOPTS --prop:guestinfo.role=master $SOURCE_MASTER $TARGET_MASTER

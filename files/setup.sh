@@ -101,23 +101,9 @@ __CUSTOMIZE_PHOTON__
 	
 	# create SSH Passphrase. Host Key checking is already disabled
 	ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
-	
-	tar -xzf /root/nappinstall.tgz -C /
-	
-	echo -e "\e[92mprepare k8s cluster\e[37m"
-	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
-	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
-	sed -i -e 's\{{K8SMASTER}}\'$MASTER_IP_ADDRESS'\g' /nappinstall/k8s-master-setup.sh
-	sed -i -e 's\{{PODNET}}\'$PODNET'\g' /nappinstall/k8s-master-setup.sh
-	
-	bash /nappinstall/k8s-master-setup.sh
-        tail -n 2 /nappinstall/kubeadm-init.out > /nappinstall/kubeadm-node.sh
 
-	echo -e "\e[92mgrant local node api access\e[37m"
-	mkdir -p /root/.kube
-	cp /etc/kubernetes/admin.conf /root/.kube/config
- 	chown $(id -u):$(id -g) /root/.kube/config
-	export KUBECONFIG=/root/.kube/config
+	# extract package with yaml templates
+	tar -xzf /root/nappinstall.tgz -C /
 
         #if localcache exists try to download kubernetes packages
         if ! [ -z "${LOCALCACHE}" ]; then
@@ -140,6 +126,21 @@ __CUSTOMIZE_PHOTON__
         else
                 echo -e "\e[92mLocalCache NOT set.\e[37m"
         fi
+
+	echo -e "\e[92mprepare k8s cluster\e[37m"
+	K8SVERSION=$(rpm -q kubernetes-kubeadm |cut -d'-' -f3)
+	sed -i -e 's\{{K8SVERSION}}\'$K8SVERSION'\g' /nappinstall/k8s-master-setup.sh
+	sed -i -e 's\{{K8SMASTER}}\'$MASTER_IP_ADDRESS'\g' /nappinstall/k8s-master-setup.sh
+	sed -i -e 's\{{PODNET}}\'$PODNET'\g' /nappinstall/k8s-master-setup.sh
+	
+	bash /nappinstall/k8s-master-setup.sh
+        tail -n 2 /nappinstall/kubeadm-init.out > /nappinstall/kubeadm-node.sh
+
+	echo -e "\e[92mgrant local node api access\e[37m"
+	mkdir -p /root/.kube
+	cp /etc/kubernetes/admin.conf /root/.kube/config
+ 	chown $(id -u):$(id -g) /root/.kube/config
+	export KUBECONFIG=/root/.kube/config
 
 	if [ ${PRELOAD} == "True" ]; then
 	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo\e[37m"

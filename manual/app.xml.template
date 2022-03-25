@@ -38,7 +38,7 @@
           <Description>DNS Search Path</Description>
         </Property>
 	<Category>Platform Settings</Category>
-        <Property ovf:userConfigurable="true" ovf:value="VMware1!VMware1!" ovf:password="true" ovf:type="string" ovf:key="guestinfo.root_password">
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.root_password" ovf:value="VMware1!VMware1!">
           <Label>Root Password</Label>
           <Description>Password to login in as root. Please use a secure password</Description>
         </Property>
@@ -54,7 +54,7 @@
           <Label>NSX User</Label>
           <Description>NSX Mgr Admin User</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="VMware1!VMware1!" ovf:password="true" ovf:type="string" ovf:key="guestinfo.nsxpassword">
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.nsxpassword" ovf:value="VMware1!VMware1!">
           <Label>NSX User Password</Label>
           <Description>NSX User Password</Description>
         </Property>
