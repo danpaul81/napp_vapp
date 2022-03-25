@@ -118,7 +118,29 @@ __CUSTOMIZE_PHOTON__
 	cp /etc/kubernetes/admin.conf /root/.kube/config
  	chown $(id -u):$(id -g) /root/.kube/config
 	export KUBECONFIG=/root/.kube/config
-  
+
+        #if localcache exists try to download kubernetes packages
+        if ! [ -z "${LOCALCACHE}" ]; then
+                echo -e "\e[92mLocalCache is set. Trying to download k8s base package\e[37m"
+                set +e
+                wget -nv -P /nfs http://${LOCALCACHE}/base-images.tgz
+                rc=$?
+                if [[ $rc -eq 0 ]]; then
+                        echo -e "\e[92mUnpacking LocalCache Package & removing download\e[37m"
+                        tar -xvf /nfs/base-images.tgz -C /nfs
+                        rm /nfs/base-images.tgz
+                        echo -e "\e[92mImporting LocalCache Package\e[37m"
+                        bash /nfs/base-images/load_docker_images.sh
+                        echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
+                        rm -rf /nfs/base-images
+                else
+                        echo -e "\e[92mDownload from LocalCache failed. Continuing\e[37m"
+                fi
+                set -e
+        else
+                echo -e "\e[92mLocalCache NOT set.\e[37m"
+        fi
+
 	if [ ${PRELOAD} == "True" ]; then
 	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo\e[37m"
 	    docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
@@ -309,15 +331,36 @@ __CUSTOMIZE_PHOTON__
 	systemctl enable nfs-server.service	
 	systemctl start nfs-server.service
 
+        #if localcache exists try to download kubernetes packages
+        if ! [ -z "${LOCALCACHE}" ]; then
+                echo -e "\e[92mLocalCache is set. Trying to download k8s base package\e[37m"
+                set +e
+                wget -nv -P /nfs http://${LOCALCACHE}/base-images.tgz
+                rc=$?
+                if [[ $rc -eq 0 ]]; then
+                        echo -e "\e[92mUnpacking LocalCache Package & removing download\e[37m"
+                        tar -xvf /nfs/base-images.tgz -C /nfs
+                        rm /nfs/base-images.tgz
+                        echo -e "\e[92mImporting LocalCache Package\e[37m"
+                        bash /nfs/base-images/load_docker_images.sh
+                        echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
+                        rm -rf /nfs/base-images
+                else
+                        echo -e "\e[92mDownload from LocalCache failed. Continuing\e[37m"
+                fi
+                set -e
+        else
+                echo -e "\e[92mLocalCache NOT set.\e[37m"
+        fi
+
 	echo -e "\e[92mFinished Base Setup\e[37m"
 	touch /nappinstall/READY_BASE
 
-
-	#if localcache exists try to download packages
+	#if localcache exists try to download nsx packages
 	if ! [ -z "${LOCALCACHE}" ]; then
 		echo -e "\e[92mLocalCache is set. Trying to download package\e[37m"
 		set +e
-		wget -P /nfs http://${LOCALCACHE}/napp-images.tgz
+		wget -nv -P /nfs http://${LOCALCACHE}/napp-images.tgz
 		rc=$?
 		if [[ $rc -eq 0 ]]; then
 			echo -e "\e[92mUnpacking LocalCache Package & removing download\e[37m"
@@ -326,7 +369,7 @@ __CUSTOMIZE_PHOTON__
 			echo -e "\e[92mImporting LocalCache Package\e[37m"
 			bash /nfs/napp-images/load_docker_images.sh
 			echo -e "\e[92memoving LocalCache Download/Directory\e[37m"
-			rm -rf /nfs/napp-iamges
+			rm -rf /nfs/napp-images
 		else 
 			echo -e "\e[92mDownload from LocalCache failed. Continuing\e[37m"
 		fi		
