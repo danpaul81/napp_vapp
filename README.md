@@ -12,6 +12,32 @@ The vAPP will deploy the Blue boxes on the right side and they can be in the sam
 The PodNetwork must have at least one /24 Network for each VM (master and node). So in our case we could also use as PodNet 172.25.0.0/23 because we have one Master and one Node. 
 The Load Balancer IPs (VIP Pool) must be within the same subnet where master and node are connected. 
 
+## Prerequisites 
+
+Folowing prerequisites are needed 
+
+* NSX Manager 3.2 
+
+* DNS Server 
+
+Access to NSX Application Platform requires an exposed service from the kubernetes cluster. IP will be chosen from the Load Balancer Pool and a DNS Entry must exist BEFORE the deployment because NSX will ask the DNS Server which IP should be used for the Service. 
+
+In the picture above we create a LoadBalancer Pool with the IP addresses from 172.16.10.200-172.16.20.205. If we create a DNS entry like “napp.corp.local” we must point to one of the defined Addresses. (napp.corp.local=172.16.10.202). While the setupprocess NSX Manager will ask the DNS Server what IP Address is used for “napp.corp.local” and will create the Service IP in the K8S Cluster.  
+
+Worst Case Workaround: If there is no chance to create an DNS entry on the DNS Server for the NSX Application Platform, you must connect to the NSX Manager CLI via root and create an Host entry in the /etc/hosts.  
+
+* 68 Gigabyte RAM (4G Master Node / 64G Worker Node) 
+
+* 1 Terabyte Disk Drive 
+
+vSphere DRS must be enabled in the Cluster where you want to deply NAPP even if you have only one host in the cluster. Otherwhise you get the following deployment Error 
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/drs_error.png?raw=true)
+
+* NAPP_VAPP can be deployed in a VLAN based DVPG or NSX VLAN/Overlay Segment. Default Gateway must work and internet connection must be possible.  
+
+
+
 
 # VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 more documentation to be added here
