@@ -127,7 +127,7 @@ __CUSTOMIZE_PHOTON__
                 rc=$?
                 if [[ $rc -eq 0 ]]; then
                         echo -e "\e[92mUnpacking LocalCache Package & removing download\e[37m"
-                        tar -xvf /nappinstall/base-images.tgz -C /nfs
+                        tar -xvf /nappinstall/base-images.tgz -C /nappinstall
                         rm /nappinstall/base-images.tgz
                         echo -e "\e[92mImporting LocalCache Package\e[37m"
 			( cd /nappinstall/base-images && bash /nappinstall/base-images/load_docker_images.sh )
