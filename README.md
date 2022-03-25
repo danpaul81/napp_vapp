@@ -6,7 +6,7 @@ Depending on the infrastructure where you'll run NSX Application Platform we dec
 
 This release is for evaluation only, but later we may add some features to make it production ready.
 
-![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/architecture.jpg?raw=true)
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/architecture.png?raw=true)
 
 The vAPP will deploy the Blue boxes on the right side and they can be in the same network like DNS and NSX Manager, but they can also be in a different Network like in the picture above. 
 The PodNetwork must have at least one /24 Network for each VM (master and node). So in our case we could also use as PodNet 172.25.0.0/23 because we have one Master and one Node. 
