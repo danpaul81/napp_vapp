@@ -93,6 +93,24 @@ __CUSTOMIZE_PHOTON__
     echo "NTP=${NTP_SERVER}" >> /etc/systemd/timesyncd.conf
     systemctl restart systemd-timesyncd
 
+# check network connection
+
+echo -e "\e[92mChecking Internet Connection\e[37m"
+set +e
+wget -nv -P /nappinstall https://raw.githubusercontent.com/danpaul81/napp_vapp/main/README.md 
+rc=$?
+while [[ $rc != 0 ]]; do
+    echo -e "$(date) \e[91mFailed. Check your network and/or re-enroll with correct settings. Retry in 10sec\e[37m"
+    echo -e "\e[91mIP: $IP_ADDRESS Netmask: $NETMASK GW: $GATEWAY DNS: $DNS_SERVER\e[37m"
+    sleep 10s
+    wget -nv -P /nappinstall https://raw.githubusercontent.com/danpaul81/napp_vapp/main/README.md
+    rc=$? 
+done 
+
+echo -e "\e[92mDone....\e[37m"
+set -e
+
+
 # depending on appliance role (master or node) prepare vm
 
     if [ ${ROLE} == "master" ]; then
