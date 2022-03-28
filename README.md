@@ -36,7 +36,7 @@ vSphere DRS must be enabled in the Cluster where you want to deply NAPP even if 
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/drs_error.png?raw=true)
 
-* NAPP_VAPP can be deployed in a VLAN based DVPG or NSX VLAN/Overlay Segment. Default Gateway must work and internet connection must be possible.  
+* NAPP_VAPP can be deployed in a VLAN based DVPG or NSX VLAN/Overlay Segment. Default Gateway, DNS must work and internet connection must be possible.  
 
 ## Setup NSX vAPP in vCenter 
 
@@ -53,7 +53,40 @@ We recognized some Issues while deploying if the Internet Connection is slow. So
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/customize_preload.png?raw=true)
 
+### Start vAPP 
 
+Just start the overall vapp – both VMs will do their own setup steps in parallel. Depending on speed of your internet connection this can take some hours! 
+
+### Watching the Process 
+
+All steps will be printed on the console from the Master and the Node and you can check the process there. 
+The Logfiles will be stored in /var/log/photon-customization.log 
+You can also SSH into the Master or the Node using root/the password you created while deployment and check if Kubernetes is up and running. 
+
+```
+(watch) kubectl get pods -A 
+```
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/kubectl.png?raw=true)
+
+You should see after some Minutes all machines in Ready state. When all Images are downloaded the next steps can be seen in NSX Manager and also with the kubectl command. 
+If all Images for the Base Installation are downloaded (Last Image is zookeeper), the script will automatically push the .kube/config to NSX Manager and make all settings that are needed to proceed. 
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_deployment.png?raw=true)
+
+If the Installation will not start after 2 minutes you can start the Installation also manually. 
+If everything works as expected, the certmanager will be installed 
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/certmgr.png?raw=true)
+
+Followed by Project Contour 
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/contour.png?raw=true)
+
+And than the NSXi Platform will be installed in some steps
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_deployment.png?raw=true)
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_gui_deployment.png?raw=true)
 
 ## VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 more documentation to be added here
