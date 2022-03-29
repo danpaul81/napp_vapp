@@ -25,8 +25,8 @@
     <Name>NAPP vApp</Name>
     <StartupSection>
       <Info>Specifies the startup order of the application.</Info>
-      <Item ovf:startDelay="10" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_node" ovf:stopDelay="10" ovf:order="1"/>
-      <Item ovf:startDelay="10" ovf:id="{{APPLIANCENAME}}_{{VERSION}}_master" ovf:stopDelay="10" ovf:order="1"/>
+      <Item ovf:startDelay="10" ovf:id="{{APPLIANCENAME}}-{{VERSION}}-node" ovf:stopDelay="10" ovf:order="1"/>
+      <Item ovf:startDelay="10" ovf:id="{{APPLIANCENAME}}-{{VERSION}}-master" ovf:stopDelay="10" ovf:order="1"/>
     </StartupSection>
     <ProductSection>
         <Info>Information about the installed software</Info>

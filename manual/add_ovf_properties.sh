@@ -67,8 +67,8 @@ echo "VAPP replacements done"
 
 #setup Virtual System for napp master
     #modify name
-    sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_master\">/g" $VIRTUALSYSTEM1_TEMP
-    sed -i "s/<Name>.*<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_master<\/Name>/g" $VIRTUALSYSTEM1_TEMP
+    sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}-${PHOTON_VERSION}-master\">/g" $VIRTUALSYSTEM1_TEMP
+    sed -i "s/<Name>.*<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}-${PHOTON_VERSION}-master<\/Name>/g" $VIRTUALSYSTEM1_TEMP
     #remove last tag and add new footer
     sed -i "/  <\/VirtualSystem>/d" $VIRTUALSYSTEM1_TEMP
     # modify original vmdisk1/vmdisk2 to vmdisk1/vmdisk3
@@ -86,8 +86,8 @@ echo "VAPP replacements done"
 EOF
 #setup Virtual System for napp node
     #modify name
-    sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_node\">/g" $VIRTUALSYSTEM2_TEMP
-    sed -i "s/<Name>.*<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_node<\/Name>/g" $VIRTUALSYSTEM2_TEMP
+    sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}-${PHOTON_VERSION}-node\">/g" $VIRTUALSYSTEM2_TEMP
+    sed -i "s/<Name>.*<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}-${PHOTON_VERSION}-node<\/Name>/g" $VIRTUALSYSTEM2_TEMP
     #remove last tag and add new footer
     sed -i "/  <\/VirtualSystem>/d" $VIRTUALSYSTEM2_TEMP
     #modify original vmdisk1/vmdisk2 to vmdisk2/vmdisk4
@@ -138,7 +138,7 @@ echo "VAPP manifests build"
 TEMPLATENETWORK=$(grep "Network ovf:name" $MASTER_APP_OVF |cut -d\" -f2)
 sed -i "s/${TEMPLATENETWORK}/VM_Network/g" $MASTER_APP_OVF
 
-sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}_master\">/g" $MASTER_APP_OVF
+sed -i "s/<VirtualSystem.*/<VirtualSystem ovf:id=\"${PHOTON_APPLIANCE_NAME}_${PHOTON_VERSION}-master\">/g" $MASTER_APP_OVF
 
 sed -i 's/<VirtualHardwareSection>/<VirtualHardwareSection ovf:transport="com.vmware.guestInfo">/g' $MASTER_APP_OVF
 sed -i "/    <\/vmw:BootOrderSection>/ r ${APP_OVF_TEMPLATE}" $MASTER_APP_OVF
@@ -157,10 +157,10 @@ sed -i "s/4096MB of memory/65536MB of memory/g" $NODE_APP_OVF
 sed -i "s/VirtualQuantity>4096</VirtualQuantity>65536</g" $NODE_APP_OVF
 
 # STEP 2.3 assign Names to master / node VMs 
-sed -i "s/<Name>${PHOTON_APPLIANCE_NAME}<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_master<\/Name>/g" $MASTER_APP_OVF
-sed -i "s/<Name>${PHOTON_APPLIANCE_NAME}<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}_node<\/Name>/g" $NODE_APP_OVF
-sed -i "s/{{ROLEPRODUCT}}/${PHOTON_APPLIANCE_NAME}_master/g" $MASTER_APP_OVF
-sed -i "s/{{ROLEPRODUCT}}/${PHOTON_APPLIANCE_NAME}_node/g" $NODE_APP_OVF
+sed -i "s/<Name>${PHOTON_APPLIANCE_NAME}<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}-master<\/Name>/g" $MASTER_APP_OVF
+sed -i "s/<Name>${PHOTON_APPLIANCE_NAME}<\/Name>/<Name>${PHOTON_APPLIANCE_NAME}-node<\/Name>/g" $NODE_APP_OVF
+sed -i "s/{{ROLEPRODUCT}}/${PHOTON_APPLIANCE_NAME}-master/g" $MASTER_APP_OVF
+sed -i "s/{{ROLEPRODUCT}}/${PHOTON_APPLIANCE_NAME}-node/g" $NODE_APP_OVF
 
 sed -i "s/{{ROLE}}/master/g" $MASTER_APP_OVF
 sed -i "s/{{ROLE}}/node/g" $NODE_APP_OVF

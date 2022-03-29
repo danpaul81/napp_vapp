@@ -5,8 +5,8 @@ SESSIONID=54849df648114cdf98a9e20e20fc0ce8
 
 
 #local path to ova sources
-SOURCE_MASTER='output-vsphere-iso/NAPP_Appliance_0.1.3_master_app.ova'
-SOURCE_NODE='output-vsphere-iso/NAPP_Appliance_0.1.3_node_app.ova'
+SOURCE_MASTER='output-vsphere-iso/NAPP_Appliance_0.1.4_master_app.ova'
+SOURCE_NODE='output-vsphere-iso/NAPP_Appliance_0.1.4_node_app.ova'
 
 #VCD URL/org/vdc/vapp
 #important: select different VAPP names for master/node
