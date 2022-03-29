@@ -16,6 +16,8 @@ systemctl start docker
 systemctl disable cloud-init.service
 systemctl disable iptables
 
+#disable vmtools guest customization as VCD tries to exec it
+/usr/bin/vmware-toolbox-cmd config set deployPkg enable-customization false
 
 #echo '> Loading Docker Images'
 #docker pull harbor-repo.vmware.com/dpaul/idsreplay:latest
