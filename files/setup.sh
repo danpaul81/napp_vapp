@@ -29,11 +29,9 @@ else
     LOCALCACHE_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.localcache")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
-    PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4)
 
     MASTER_IP_ADDRESS=$(echo "${MASTER_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NODE_IP_ADDRESS=$(echo "${NODE_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-
 
     if [ ${ROLE} == "master" ]; then
         IP_ADDRESS=${MASTER_IP_ADDRESS}
@@ -57,9 +55,34 @@ else
     VIP=$(echo "${VIP_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     PODNET=$(echo "${PODNET_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NAPPFQDN=$(echo "${NAPPFQDN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-    NAPPAUTODEPLOY=$(echo "${NAPPAUTODEPLOY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NTP_SERVER=$(echo "${NTP_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     LOCALCACHE=$(echo "${LOCALCACHE_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+
+    NAPPAUTODEPLOY=$(echo "${NAPPAUTODEPLOY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    PRELOAD=$(echo "${PRELOAD_PROPERTY}" | cut -d'"' -f4)
+
+
+    # different OVA imlementations use upper/lowercase True/false operators. fix by checking without case sensitivity and setting to 1/0
+    shopt -s nocasematch
+    case $PRELOAD in
+	true)
+		PRELOAD=1
+		;;
+	*)
+		PRELOAD=0
+		;;
+    esac
+
+
+    case $NAPPAUTODEPLOY in
+	true)
+		NAPPAUTODEPLOY=1
+		;;
+	*)
+		NAPPAUTODEPLOY=0
+		;;
+    esac 	
+    shopt -u nocasematch
 
     echo -e "\e[92mConfiguring Static IP Address ...\e[37m"
     cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
@@ -160,7 +183,7 @@ set -e
  	chown $(id -u):$(id -g) /root/.kube/config
 	export KUBECONFIG=/root/.kube/config
 
-	if [ ${PRELOAD} == "True" ]; then
+	if [ ${PRELOAD} == 1 ]; then
 	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo\e[37m"
 	    docker pull projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
     	    docker pull quay.io/metallb/controller:v0.9.7
@@ -229,7 +252,7 @@ set -e
 	
 	set -e
 	# preload is set and localcache not used. copy bass images to node
-	if [ ${PRELOAD} == "True" ] && [ -z "$LOCALCACHE}" ]; then
+	if [ ${PRELOAD} == 1 ] && [ -z "$LOCALCACHE}" ]; then
 	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo of node\e[37m"
   
 	    docker save -o /nappinstall/antrea-ubuntu:v1.5.0.tar projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
@@ -299,7 +322,7 @@ set -e
 	bash /nappinstall/napp-prepare-nsx.sh
 
         #start NAPP Deployment on NSX Manager
-	if [ ${NAPPAUTODEPLOY} == "True" ]; then
+	if [ ${NAPPAUTODEPLOY} == 1 ]; then
 	  echo -e "\e[92mStarting NAPP Deployment on NSX Manager\e[37m"
 	  bash /nappinstall/napp-deploy-nsx.sh
 	else
@@ -400,7 +423,7 @@ set -e
 
 
         #preload container base images
-	if [ ${PRELOAD} == "True" ]; then
+	if [ ${PRELOAD} == 1 ]; then
 	  echo -e "\e[92mpreloading NSX container base images\e[37m"
 	  # if image pre-load fail it can still be loaded from nsx manager setup
 	  set +e
@@ -412,7 +435,7 @@ set -e
 	touch /nappinstall/READY_BASE_IMAGES
 
         #preload container application images
-	if [ ${PRELOAD} == "True" ]; then
+	if [ ${PRELOAD} == 1 ]; then
 	  echo -e "\e[92mpreloading NSX application platform container images\e[37m"
 	  set +e
 	  bash /nappinstall/download-solution-images.sh
