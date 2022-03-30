@@ -97,6 +97,14 @@ Initial setup was successful when file “/root/ran_customization” exists. The
 ### Cert-Manager Error (One Cloud related)
 If the Setup will fail in the first phase (Cert Manager installation) you may see this error Message in the NSX Manager.
 
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/certmanager.png?raw=true)
+
+In this case a retry will not fix the Problem and you will run in other Problems while installing contour.
+![alt text](
+The only option to fix this, is to cancel the Installation in NSX Manager run the Cleanup (if needed) and install NAPP via the NSX Manager UI again. 
+If it does not work and it will fail again you need to try it again to a different Time of the Day. 
+It seems that the Problem comes from our shared Storage in OneCloud and if to many people accessing the Storage the latency becomes to high and the Certmanager will not comes up in the right time. This means that all other Container will not get the needed Certs and will fail also.
+
 ## VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 more documentation to be added here
 
