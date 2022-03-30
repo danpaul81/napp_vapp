@@ -80,7 +80,7 @@ If everything works as expected, the certmanager will be installed
 
 Followed by Project Contour 
 
-![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/contour.png?raw=true)
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/contourcontainer.png?raw=true)
 
 And than the NSXi Platform will be installed in some steps
 
