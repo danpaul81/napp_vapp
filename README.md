@@ -100,10 +100,38 @@ If the Setup will fail in the first phase (Cert Manager installation) you may se
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/certmanager.png?raw=true)
 
 In this case a retry will not fix the Problem and you will run in other Problems while installing contour.
-![alt text](
+
+![alt text](https://github.com/danpaul81/napp_vapp/raw/main/images/contour.png?raw=true)
+
 The only option to fix this, is to cancel the Installation in NSX Manager run the Cleanup (if needed) and install NAPP via the NSX Manager UI again. 
 If it does not work and it will fail again you need to try it again to a different Time of the Day. 
 It seems that the Problem comes from our shared Storage in OneCloud and if to many people accessing the Storage the latency becomes to high and the Certmanager will not comes up in the right time. This means that all other Container will not get the needed Certs and will fail also.
+
+### DNS Error
+If your DNS Entry for the NAPP Appliance cannot be find you will get an error message like this and you need to correct the DNS entry.
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/dnserror1.png?raw=true)
+
+If the IP Address for the DNS Entry is not included in the list of VIP Addresses you provided to Metallb Loadbalancer you will get the following Errormessage and you should correct the DNS Entry to an address in the IP Space of the VIP Addresses.
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/dnserror2.png?raw=true)
+
+You can check it also on the CLI with the command:
+kubectl get svc -n projectcontour
+You will see the EXTERNAL-IP is in pending
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/checkserviceip.png?raw=true)
+
+### Cleanup
+Normally you can delete the NSX Application Platfrom via the NSX Manager. In some cases and especially if something went wrong in the beginning it could be that the deletion process will not clean up the Kubernetes Cluster and you will not be able to redeploy NAPP if the Namespaces “cert-manager”, nsxi-platform” and “projectcountour” exist. First you should try to delete the namespaces with the command:
+kubectl delete namespaces cert-manager nsxi-platform projectcontour
+If this fails and namespace stucks in state “Terminating” you should check the cluster APIService
+kubectl get APIService 
+You may find there entries for projectcontour or nsxi-platform that should be deleted.
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/apiservices.png?raw=true)
+  
+kubectl delete APIService v1beta1.metrics.k8s.io v1alpha1.projectcontour.io
 
 ## VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 more documentation to be added here
