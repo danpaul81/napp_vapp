@@ -116,6 +116,9 @@ __CUSTOMIZE_PHOTON__
     echo "NTP=${NTP_SERVER}" >> /etc/systemd/timesyncd.conf
     systemctl restart systemd-timesyncd
 
+    echo -e "\e[92mDisable HW Offload on eth0\e[37m"
+    ethtool --offload eth0 rx off tx off
+
 # check network connection
 
 echo -e "\e[92mChecking Internet Connection\e[37m"

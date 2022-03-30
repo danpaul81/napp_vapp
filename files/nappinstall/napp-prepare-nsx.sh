@@ -19,10 +19,16 @@ curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -H 'Accept:application/json' -F 'file
 echo -e "\e[92mNSX MGR: set NAPP settings\e[37m"
 curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -X PATCH -H "Content-Type: application/json" -d '{"version":"'$nappversion'","storage_class":"nfs-client","form_factor": "evaluation","service_config":{"service_name":"'{{nappfqdn}}'"}}' https://{{nsxmanager}}/policy/api/v1/infra/sites/default/napp/deployment/platform
 
-echo -e "\e[92mNSX MGR: wait 30s for NSX MGR cluster to sync\e[37m"
-sleep 30s
+echo -e "\e[92mNSX MGR: wait 60s for NSX MGR cluster to sync\e[37m"
+sleep 60s
 
 echo -e "\e[92mNSX MGR: run pre-checks\e[37m"
+curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -X PUT -H "Content-Type: application/json" -d '{"action":"PRE_CHECKS"}' https://{{nsxmanager}}/policy/api/v1/infra/sites/default/napp/deployment/platform/checks
+
+echo -e "\e[92mNSX MGR: wait 10sec\e[37m"
+sleep 10s
+
+echo -e "\e[92mNSX MGR: re-run pre-checks second time\e[37m"
 curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -X PUT -H "Content-Type: application/json" -d '{"action":"PRE_CHECKS"}' https://{{nsxmanager}}/policy/api/v1/infra/sites/default/napp/deployment/platform/checks
 
 echo -e "\e[92mNSX MGR: wait 10sec\e[37m"
