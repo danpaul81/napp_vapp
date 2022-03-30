@@ -88,6 +88,15 @@ And than the NSXi Platform will be installed in some steps
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_gui_deployment.png?raw=true)
 
+## Troubleshooting
+
+### Initial VAPP Deployment Failure
+If initial deployment of VAPP failes with error message in VM console you need to re-deploy the vapp. Re-starting vapp during setup process or after failes setup process will result in inconsistent state. This might be fixed in future release.  
+Initial setup was successful when file “/root/ran_customization” exists. Then rebooting of appliance is safe.
+
+### Cert-Manager Error (One Cloud related)
+If the Setup will fail in the first phase (Cert Manager installation) you may see this error Message in the NSX Manager.
+
 ## VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
 more documentation to be added here
 
