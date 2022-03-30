@@ -53,6 +53,11 @@ We recognized some Issues while deploying if the Internet Connection is slow. So
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/customize_preload.png?raw=true)
 
+In adittion we improved the deployment time with a local cache option. We loaded all Files on a Server in the OneCloud and if you insert an IP in the new Field Localcache IP the Nodes will try to download there the images first before they trey to download from the public Harbor registry.
+### The IP is: 10.124.48.62
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/localcache.png?raw=true)
+
 ### Start vAPP 
 
 Just start the overall vapp – both VMs will do their own setup steps in parallel. Depending on speed of your internet connection this can take some hours! 
