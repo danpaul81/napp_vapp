@@ -88,6 +88,25 @@ And than the NSXi Platform will be installed in some steps
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_gui_deployment.png?raw=true)
 
+If the Installation fails, it is most likely that the Metrics Postgresql Cluster does not come up.
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/metrics-postcrash.png?raw=true)
+
+You should press the Retry  Buttun in NSX Manager and if it is still not working retry it 2 or 3 times.
+
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/retrydeployment.png?raw=true)
+
+If this does not help you should check if you can deploy the vAPP in a more performant environment. If the Environment is nested it will also fail and you should proceed with the Single VMs vAPP for vCLOUD Director.
+
+## Setup NSX vAPP in vCLoud Director aka OneCloud
+To deploy in vCloud director import  NAPP_Appliance_*_master_app.ova and NAPP_Appliance_*_node_app.ova each as separate vAPP. 
+The actual release and MD5 hashes can be found here: (https://github.com/danpaul81/napp_vapp/releases/)
+
+Both need to be deployed with identical options except the “role”. This must be set “master” for master VM and “node” for node VM. 
+Within the settings of each newly deployed VM disable Guest OS Customization and then move the VM into you vAPP. In network settings choose fitting network and IP Mode DHCP. 
+After moving VMs into your existing vAPP you can delete the two newly created VAPPS.
+Then just start both VMs (startup order doesn’t matter) 
+
 ## Troubleshooting
 
 ### Initial VAPP Deployment Failure
