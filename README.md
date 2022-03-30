@@ -84,7 +84,7 @@ Followed by Project Contour
 
 And than the NSXi Platform will be installed in some steps
 
-![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_deployment.png?raw=true)
+![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsxi-platform.png?raw=true)
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/nsx_gui_deployment.png?raw=true)
 
