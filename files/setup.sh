@@ -238,7 +238,7 @@ set -e
 	
 	NODEIPS=$(grep napp-k8s-node /etc/hosts | cut -d' ' -f1)
 
-	eet +e
+	set +e
   	
 	# ping test all nodes, continue if successful
 	echo -e "\e[92mChecking if if nodes are online (re-try every 60s)\e[37m"

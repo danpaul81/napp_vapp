@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #session ID on VCD
-SESSIONID=3dd6a06a43024265a9d0aab24275fa97
+SESSIONID=
 
 
 
