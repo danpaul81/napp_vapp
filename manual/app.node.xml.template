@@ -44,7 +44,7 @@
            ovf:userConfigurable="true"
            ovf:value="1"
            ovf:qualifiers="ValueMap{&quot;1&quot;,&quot;2&quot;,&quot;3&quot;}">
-        <Label>Node number</Label>
+        <Label>Node Number</Label>
         <Description>When deploying multiple worker nodes please specify which node this is</Description>
         </Property>
 	<Property ovf:userConfigurable="true" ovf:value="True" ovf:type="boolean" ovf:key="guestinfo.preload">

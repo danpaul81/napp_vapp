@@ -3,12 +3,13 @@
 
 #debug settings, comment on prod system
 PHOTON_APPLIANCE_NAME="NAPP-Appliance"
-FINAL_PHOTON_APPLIANCE_NAME="NAPP_Appliance"
+FINAL_PHOTON_APPLIANCE_NAME="NAPP-Appliance_0.1.5"
 PHOTON_NETWORK="OL_SEG_10"
 PHOTON_VERSION="0.1.5"
 VAPP_OVF_TEMPLATE="vapp.xml.template"
 APP_MASTER_OVF_TEMPLATE="app.master.xml.template"
 APP_NODE_OVF_TEMPLATE="app.node.xml.template"
+
 #
 
 ORIGPATH=$(pwd)
@@ -190,13 +191,13 @@ echo "Creating APP Node HASH"
 openssl sha1 ${PHOTON_APPLIANCE_NAME}_node_app.ovf ${PHOTON_APPLIANCE_NAME}-disk-0.vmdk ${PHOTON_APPLIANCE_NAME}-disk-1.vmdk > ${NODE_APP_MF}
 cd $ORIGPATH
 
-echo "Build VAPP OVA"
-ovftool ${VAPP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
-chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+#echo "Build VAPP OVA"
+#ovftool ${VAPP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
+#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_vapp.ova
 
-echo "Build Master OVA"
-ovftool ${MASTER_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
-chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
+#echo "Build Master OVA"
+#ovftool ${MASTER_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
+#chmod a+r ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_master_app.ova
 
 echo "Build Node OVA"
 ovftool ${NODE_APP_OVF} ${OUTPUT_PATH}/${FINAL_PHOTON_APPLIANCE_NAME}_node_app.ova
