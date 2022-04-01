@@ -238,128 +238,135 @@ set -e
 	
 	NODEIPS=$(grep napp-k8s-node /etc/hosts | cut -d' ' -f1)
 
-	for IP in ${NODEIPS[*]}; do
-	        echo "dieseip $IP"
-	done
+	eet +e
+  	
+	# ping test all nodes, continue if successful
+	echo -e "\e[92mChecking if if nodes are online (re-try every 60s)\e[37m"
+        ALLONLINE=$NODENUM
+        while [[ $ALLONLINE -ne 0 ]]; do
+                ALLONLINE=0
+                echo -n "$(date) Ping node(s): "
+                for IP in ${NODEIPS[*]}; do
+                        ping -c 1 $IP &>/dev/null
+                        rc=$?
+                        if [[ $rc -eq 0 ]]; then
+                                echo  -n -e  "\e[92m $IP \e[37m"
+                        else
+                                echo  -n -e "\e[91m $IP \e[37m"
+                        fi
+                        ALLONLINE=$((ALLONLINE+rc))
+                done
+                echo " "
+	   	if [[ $ALLONLINE -ne 0 ]]; then
+	                sleep 60s
+		fi
+        done
 
-
-	# ping check all nodes
-
-	# if ready
-	# copy ssh key to all nodes
-
-	# check base readyness for all nodes
-	
-	# if ready
-	# preload images if needed for all nodes
-	# join cluster for all nodes
-	
-	# wait for "ready_base_images" for all nodes
-
-	#deploy nsx   -> evaluation for 1 node , advanced for 3 node
-
-
-	# check if node1 is ready 
-	set +e
-	echo -e "\e[92mChecking if node1 is online (ping every 30sec) $NODE_IP_ADDRESS \e[37m"
-
-	COUNT=1
-	while [[ $COUNT -eq 1 ]]; do
-        	ping -c 1 $NODE_IP_ADDRESS &>/dev/null
-	        rc=$?
-    	    if [[ $rc -eq 0 ]]; then
-                COUNT=0
-    	    else
-                COUNT=1
-		echo -e "\e[92mNO answer from $NODE_IP_ADDRESS. retry in 30sec \e[37m"
-    	    fi
-	#wait 30s even if successful
-	sleep 30s
-	done
-	echo -e "\e[92mGot response from node1. Copy SSH Key\e[37m"
+	echo -e "\e[92mGot response from node(s). Copying SSH Key\e[37m"
 
 	export SSHPASS=${ROOT_PASSWORD}
-	sshpass -e ssh-copy-id -i /root/.ssh/id_rsa ${NODE_IP_ADDRESS}
 
-	echo -e "\e[92mChecking if Node1 has finished its base setup \e[37m"
+	for IP in ${NODEIPS[*]}; do
+		sshpass -e ssh-copy-id -i /root/.ssh/id_rsa ${IP}
+	done
 
-        COUNT=1
-        while [[ $COUNT -eq 1 ]]; do
-                ssh ${NODE_IP_ADDRESS} test -f /nappinstall/READY_BASE
-                rc=$?
-            if [[ $rc -eq 0 ]]; then
-                COUNT=0
-            else
-                echo -e "\e[92mstill checking if node1 has finished its base setup. retry in 30sec \e[37m"
-		COUNT=1
-		sleep 30s
-            fi
+        # check for /nappinstall/READY_BASE on all nodes, continue if successful
+	echo -e "\e[92mChecking if if node(s) finished base setup (re-try every 60s)\e[37m"
+        ALLONLINE=$NODENUM
+        while [[ $ALLONLINE -ne 0 ]]; do
+                ALLONLINE=0
+                echo -n "$(date) Base Setup ready? "
+                for IP in ${NODEIPS[*]}; do
+                        ssh ${IP} test -f /nappinstall/READY_BASE
+                        rc=$?
+                        if [[ $rc -eq 0 ]]; then
+                                echo  -n -e  "\e[92m $IP \e[37m"
+                        else
+                                echo  -n -e "\e[91m $IP \e[37m"
+                        fi
+                        ALLONLINE=$((ALLONLINE+rc))
+                done
+                echo " "
+
+		if [[ $ALLONLINE -ne 0 ]]; then
+                	sleep 60s
+		fi
         done
-        echo -e "\e[92mGot response from node1. Load Base k8s images and do cluster join\e[37m"
+	echo -e "\e[92mnode(s) base setup ready. Load Base k8s images and do cluster join\e[37m"
 	
 	set -e
+	
 	# preload is set and localcache not used. copy bass images to node
 	if [ ${PRELOAD} == 1 ] && [ -z "$LOCALCACHE}" ]; then
-	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo of node\e[37m"
+	    echo -e "\e[92mLoading Antrea/Metallb Image into local Docker Image Repo of node(s)\e[37m"
   
 	    docker save -o /nappinstall/antrea-ubuntu:v1.5.0.tar projects.registry.vmware.com/antrea/antrea-ubuntu:v1.5.0
 	    docker save -o /nappinstall/controller:v0.9.7.tar quay.io/metallb/controller:v0.9.7
 	    docker save -o /nappinstall/speaker:v0.9.7.tar quay.io/metallb/speaker:v0.9.7
-   
-	    scp /nappinstall/antrea-ubuntu:v1.5.0.tar ${NODE_IP_ADDRESS}:/nappinstall
-	    scp /nappinstall/controller:v0.9.7.tar ${NODE_IP_ADDRESS}:/nappinstall
-	    scp /nappinstall/speaker:v0.9.7.tar ${NODE_IP_ADDRESS}:/nappinstall
-	    ssh ${NODE_IP_ADDRESS} docker load -i /nappinstall/antrea-ubuntu:v1.5.0.tar
-	    ssh ${NODE_IP_ADDRESS} docker load -i /nappinstall/controller:v0.9.7.tar
-	    ssh ${NODE_IP_ADDRESS} docker load -i /nappinstall/speaker:v0.9.7.tar
+   	
+	    for IP in ${NODEIPS[*]}; do
+	    	scp /nappinstall/antrea-ubuntu:v1.5.0.tar ${IP}:/nappinstall
+	    	scp /nappinstall/controller:v0.9.7.tar ${IP}:/nappinstall
+	    	scp /nappinstall/speaker:v0.9.7.tar ${IP}:/nappinstall
+	    	ssh ${IP} docker load -i /nappinstall/antrea-ubuntu:v1.5.0.tar
+	    	ssh ${IP} docker load -i /nappinstall/controller:v0.9.7.tar
+	    	ssh ${IP} docker load -i /nappinstall/speaker:v0.9.7.tar
+	   done
 	else
-	    echo -e "\e[92mNOT Loading Antrea/Metallb Image into local Docker Image Repo of node\e[37m"
+		echo -e "\e[92mNOT Loading Antrea/Metallb Image into local Docker Image Repo of node(s)\e[37m"
 	fi
 	
 	echo -e "\e[92mJoin K8S Cluster\e[37m"
-	scp /nappinstall/kubeadm-node.sh ${NODE_IP_ADDRESS}:/nappinstall
-	ssh ${NODE_IP_ADDRESS} bash /nappinstall/kubeadm-node.sh
+
+ 	for IP in ${NODEIPS[*]}; do
+		scp /nappinstall/kubeadm-node.sh ${IP}:/nappinstall
+		ssh ${IP} bash /nappinstall/kubeadm-node.sh
+	done
 
 	# nfs-provisioner
 	kubectl apply -f /nappinstall/nfs-provisioner.yaml
 
-#check if node2 is ready
-#push ssh key
-#push images
-#add to cluster
-
-
-#check if node3 is ready
-#push ssh key
-#push images
-#add to cluster
-
-
-# check if node one has finished base image preload
+	# check if nodes have finished base image preload
 	set +e
-	echo -e "\e[92mChecking if node1 has finished loading NSX base images. This may take >60min\e[37m"
+	echo -e "\e[92mChecking if node(s) have finished loading NSX base images. This may take >60min\e[37m"
+	echo -e "\e[92mretry every 5min\e[37m"
 
-        COUNT=1
-        while [[ $COUNT -eq 1 ]]; do
-                ssh ${NODE_IP_ADDRESS} test -f /nappinstall/READY_BASE_IMAGES
-                rc=$?
-            if [[ $rc -eq 0 ]]; then
-                COUNT=0
-            else
-                echo -e "$(date) \e[92mstill checking if node1 has finished loading base images. retry in 5min \e[37m"
-		COUNT=1
-		sleep 5m
-            fi
+	ALLONLINE=$NODENUM
+        while [[ $ALLONLINE -ne 0 ]]; do
+                ALLONLINE=0
+                echo -n "$(date) NSX base IMAGE ready? "
+                for IP in ${NODEIPS[*]}; do
+                        ssh ${IP} test -f /nappinstall/READY_BASE_IMAGES
+                        rc=$?
+                        if [[ $rc -eq 0 ]]; then
+                                echo  -n -e  "\e[92m $IP \e[37m"
+                        else
+                                echo  -n -e "\e[91m $IP \e[37m"
+                        fi
+                        ALLONLINE=$((ALLONLINE+rc))
+		done
+        	echo " "
+	
+                if [[ $ALLONLINE -ne 0 ]]; then
+			sleep 5m
+		fi
         done
-        echo -e "\e[92mGot response from node1. Starting NSX manager setup\e[37m"
+
+	echo -e "\e[92mGot response from node(s). Starting NSX manager setup\e[37m"
 	
 	set -e
 
 	echo -e "\e[92mPreparing NSX Manager NAPP Settings\e[37m"
-        sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-prepare-nsx.sh
-        sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' /nappinstall/napp-prepare-nsx.sh
-        sed -i -e 's\{{nsxmanager}}\'$NSXMGR'\g' /nappinstall/napp-prepare-nsx.sh
-        sed -i -e 's\{{nappfqdn}}\'$NAPPFQDN'\g' /nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' 		/nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' 	/nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nsxmanager}}\'$NSXMGR'\g' 	/nappinstall/napp-prepare-nsx.sh
+        sed -i -e 's\{{nappfqdn}}\'$NAPPFQDN'\g' 	/nappinstall/napp-prepare-nsx.sh
+
+	if [[ $CLUSTERSIZE -eq 1 ]]; then
+		sed -i -e 's\{{nappformfactor}}\evaluation\g' /nappinstall/napp-prepare-nsx.sh
+	else
+     		sed -i -e 's\{{nappformfactor}}\advanced\g' /nappinstall/napp-prepare-nsx.sh
+	fi
 
         sed -i -e 's\{{nsxuser}}\'$NSXUSER'\g' /nappinstall/napp-deploy-nsx.sh
         sed -i -e 's\{{nsxpasswd}}\'$NSXPASSWORD'\g' /nappinstall/napp-deploy-nsx.sh
@@ -436,8 +443,10 @@ set -e
 		                COUNT=1
 				echo -e "\e[92mNO answer from $MASTER_IP_ADDRESS. retry in 30sec \e[37m"
 		    	    fi
-		#wait 30s even if successful
-		sleep 30s
+
+                	if [[ $COUNT -ne 0 ]]; then
+				sleep 30s
+			fi
 		done
 		echo -e "\e[92mGot response from master. Creating entry $NODE_IP_ADDRESS napp-k8s-node$NODENUM in master /etc/hosts\e[37m"
 

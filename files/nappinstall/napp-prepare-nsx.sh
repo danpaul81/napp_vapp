@@ -17,7 +17,7 @@ echo -e "\e[92mNSX MGR: kubetools\e[37m"
 curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -H 'Accept:application/json' -F 'file=@'$tools'' https://{{nsxmanager}}/policy/api/v1/infra/sites/default/napp/deployment/tools/upload
 
 echo -e "\e[92mNSX MGR: set NAPP settings\e[37m"
-curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -X PATCH -H "Content-Type: application/json" -d '{"version":"'$nappversion'","storage_class":"nfs-client","form_factor": "evaluation","service_config":{"service_name":"'{{nappfqdn}}'"}}' https://{{nsxmanager}}/policy/api/v1/infra/sites/default/napp/deployment/platform
+curl -k -u ''{{nsxuser}}':'{{nsxpasswd}}'' -X PATCH -H "Content-Type: application/json" -d '{"version":"'$nappversion'","storage_class":"nfs-client","form_factor": "{{nappformfactor}}","service_config":{"service_name":"'{{nappfqdn}}'"}}' https://{{nsxmanager}}/policy/api/v1/infra/sites/default/napp/deployment/platform
 
 echo -e "\e[92mNSX MGR: wait 60s for NSX MGR cluster to sync\e[37m"
 sleep 60s
