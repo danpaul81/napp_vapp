@@ -13,10 +13,6 @@
           <Label>Node IP</Label>
           <Description>IP Address for k8s node</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="172.16.10.200-172.16.10.205" ovf:type="string" ovf:key="guestinfo.vip_pool">
-          <Label>VIP Pool</Label>
-          <Description> min 5 VIP IP Addresses for k8s SVC LB. Same Network as Master/Node </Description>
-        </Property>
         <Property ovf:userConfigurable="true" ovf:value="24" ovf:type="string" ovf:key="guestinfo.netmask">
           <Label>Netmask Prefix</Label>
           <Description>CIDR notation (e.g. 24 for 255.255.255.0, 28 for 255.255.255.240)</Description>
@@ -40,28 +36,17 @@
 	<Category>Platform Settings</Category>
         <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.root_password" ovf:value="VMware1!VMware1!">
           <Label>Root Password</Label>
-          <Description>Password to login in as root. Please use a secure password</Description>
+          <Description>Password to login in as root. MUST be identical all over NAPP-VAPP VMs</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="napp.corp.local" ovf:type="string" ovf:key="guestinfo.nappfqdn">
-          <Label>NAPP DNS Service Name</Label>
-          <Description>NSX Application Platform DNS Service Name</Description>
+        <Property
+           ovf:key="guestinfo.nodenum"
+           ovf:type="string"
+           ovf:userConfigurable="true"
+           ovf:value="1"
+           ovf:qualifiers="ValueMap{&quot;1&quot;,&quot;2&quot;,&quot;3&quot;}">
+        <Label>Node number</Label>
+        <Description>When deploying multiple worker nodes please specify which node this is</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="192.168.110.201" ovf:type="string" ovf:key="guestinfo.nsxmanager">
-          <Label>NSX Manager IP</Label>
-          <Description>NSX Manager IP Address</Description>
-        </Property>
-        <Property ovf:userConfigurable="true" ovf:value="admin" ovf:type="string" ovf:key="guestinfo.nsxuser">
-          <Label>NSX User</Label>
-          <Description>NSX Mgr Admin User</Description>
-        </Property>
-        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.nsxpassword" ovf:value="VMware1!VMware1!">
-          <Label>NSX User Password</Label>
-          <Description>NSX User Password</Description>
-        </Property>
-        <Property ovf:userConfigurable="true" ovf:value="172.25.0.0/16" ovf:type="string" ovf:key="guestinfo.podnet">
-          <Label>POD Network</Label>
-          <Description>CIDR to use for Antrea POD Networking</Description>
- 	</Property>
 	<Property ovf:userConfigurable="true" ovf:value="True" ovf:type="boolean" ovf:key="guestinfo.preload">
           <Label>Pre-Load Images</Label>
           <Description>pre-load container images to prevent deployment failure</Description>

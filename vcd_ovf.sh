@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #session ID on VCD
-SESSIONID=bafd551d97fd40fda8923b5746074155
+SESSIONID=412486a9b74b4eb8bb19450c9399d3f2
+
 
 
 #local path to ova sources

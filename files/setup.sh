@@ -27,8 +27,12 @@ else
     NAPPFQDN_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappfqdn")
     NAPPAUTODEPLOY_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nappautodeploy")
     LOCALCACHE_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.localcache")
+    CLUSTERSIZE_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.clustersize")
+    NODENUM_PROPERTY==$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep -m1 "guestinfo.nodenum")
 
     ROLE=$(echo "${ROLE_PROPERTY}" | cut -d'"' -f4)
+    CLUSTERSIZE=$(echo "${CLUSTERSIZE_PROPERTY}" | cut -d'"' -f4)
+    NODENUM=$(echo "${NODENUM_PROPERTY}" | cut -d'"' -f4)
 
     MASTER_IP_ADDRESS=$(echo "${MASTER_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     NODE_IP_ADDRESS=$(echo "${NODE_IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
@@ -142,6 +146,7 @@ set -e
     if [ ${ROLE} == "master" ]; then
 	# preparation of node -> will also setup master
 	echo -e "\e[92m Role: k8s master\e[37m"
+	echo -e "\e[92m preparing cluster with ${CLUSTERSIZE} worker nodes\e[37m"
 	
 	# create SSH Passphrase. Host Key checking is already disabled
 	ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
@@ -335,6 +340,7 @@ set -e
 
     else
 	# preparation of node
+	echo -e "\e[92m Role: k8s worker #${NODENUM}\e[37m"
 	
 	tar -xzf /root/nappinstall.tgz -C /
         

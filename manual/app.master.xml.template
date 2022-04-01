@@ -1,37 +1,7 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vmw="http://www.vmware.com/schema/ovf" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">
-  <References>
-    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file1" ovf:size="{{DISKSIZE1}}"/>
-    <File ovf:href="{{APPLIANCENAME}}-disk-0.vmdk" ovf:id="file2" ovf:size="{{DISKSIZE1}}"/>
-  </References>
-  <DiskSection>
-    <Info>List of the virtual disks</Info>
-    <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk1" ovf:capacity="8" ovf:fileRef="file1"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk2" ovf:capacity="8" ovf:fileRef="file2"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^20" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk3" ovf:capacity="10"/>
-    <Disk ovf:capacityAllocationUnits="byte * 2^30" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized" ovf:diskId="vmdisk4" ovf:capacity="1000"/>
-  </DiskSection>
-  <NetworkSection>
-    <Info>The list of logical networks</Info>
-    <Network ovf:name="{{NETWORK}}">
-      <Description>The VM network</Description>
-    </Network>
-  </NetworkSection>
-  <vmw:IpAssignmentSection>
-    <Info>Supported IP assignment schemes</Info>
-  </vmw:IpAssignmentSection>
-  <VirtualSystemCollection ovf:id="NAPP_VAPP">
-    <Info>A virtual system collection</Info>
-    <Name>NAPP vApp</Name>
-    <StartupSection>
-      <Info>Specifies the startup order of the application.</Info>
-      <Item ovf:startDelay="10" ovf:id="{{APPLIANCENAME}}-{{VERSION}}-node" ovf:stopDelay="10" ovf:order="1"/>
-      <Item ovf:startDelay="10" ovf:id="{{APPLIANCENAME}}-{{VERSION}}-master" ovf:stopDelay="10" ovf:order="1"/>
-    </StartupSection>
     <ProductSection>
         <Info>Information about the installed software</Info>
-        <Product>NAPP vApp</Product>
-        <Vendor>Daniel²</Vendor>
+        <Product>{{ROLEPRODUCT}}</Product>
+        <Vendor>Daniel Stich and  Daniel Paul</Vendor>
         <Version>{{VERSION}}</Version>
         <ProductUrl>https://github.com/danpaul81/napp</ProductUrl>
         <Category>Networking</Category>
@@ -68,9 +38,9 @@
           <Description>DNS Search Path</Description>
         </Property>
 	<Category>Platform Settings</Category>
-        <Property ovf:userConfigurable="true" ovf:value="VMware1!VMware1!" ovf:password="true" ovf:type="string" ovf:key="guestinfo.root_password">
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.root_password" ovf:value="VMware1!VMware1!">
           <Label>Root Password</Label>
-          <Description>Password to login in as root. Please use a secure password</Description>
+          <Description>Password to login in as root. MUST be identical all over NAPP-VAPP VMs</Description>
         </Property>
         <Property ovf:userConfigurable="true" ovf:value="napp.corp.local" ovf:type="string" ovf:key="guestinfo.nappfqdn">
           <Label>NAPP DNS Service Name</Label>
@@ -84,19 +54,19 @@
           <Label>NSX User</Label>
           <Description>NSX Mgr Admin User</Description>
         </Property>
-        <Property ovf:userConfigurable="true" ovf:value="VMware1!VMware1!" ovf:password="true" ovf:type="string" ovf:key="guestinfo.nsxpassword">
+        <Property ovf:userConfigurable="true" ovf:type="string" ovf:key="guestinfo.nsxpassword" ovf:value="VMware1!VMware1!">
           <Label>NSX User Password</Label>
           <Description>NSX User Password</Description>
-  	</Property>
-        <Property
-           ovf:key="guestinfo.clustersize"
-           ovf:type="string"
-           ovf:userConfigurable="true"
-           ovf:value="1"
-           ovf:qualifiers="ValueMap{&quot;1&quot;,&quot;3&quot;}">
-        <Label>Number of Nodes</Label>
-        <Description> Number of k8s worker nodes. Select 1 for Evaluation, 3 for Advanced (see documentation)</Description>
         </Property>
+	<Property
+	   ovf:key="guestinfo.clustersize"
+	   ovf:type="string"
+	   ovf:userConfigurable="true"
+	   ovf:value="1"
+	   ovf:qualifiers="ValueMap{&quot;1&quot;,&quot;3&quot;}">
+	<Label>Number of Nodes</Label>
+	<Description> Number of k8s worker nodes. Select 1 for Evaluation, 3 for Advanced (see documentation)</Description> 
+	</Property>
         <Property ovf:userConfigurable="true" ovf:value="172.25.0.0/16" ovf:type="string" ovf:key="guestinfo.podnet">
           <Label>POD Network</Label>
           <Description>CIDR to use for Antrea POD Networking</Description>
@@ -109,8 +79,12 @@
           <Label>AutoDeploy NAPP</Label>
           <Description>Fully deploy NAPP in NSX MGR. If not selected NAPP deployment needs to be started manually</Description>
         </Property>
-	 <Property ovf:userConfigurable="true"  ovf:type="string" ovf:key="guestinfo.localcache">
+        <Property ovf:userConfigurable="true"  ovf:type="string" ovf:key="guestinfo.localcache">
           <Label>Localcache IP (optional)</Label>
           <Description>optional IP Address of local image cache to speed-up deployment</Description>
+        </Property>
+        <Property ovf:userConfigurable="false" ovf:value="{{ROLE}}" ovf:type="string" ovf:key="guestinfo.role">
+          <Label>NAPP Role</Label>
+          <Description>can be master or node</Description>
         </Property>
     </ProductSection>
