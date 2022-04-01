@@ -228,10 +228,10 @@ set -e
 
 	# collect ip of all nodes   -> 1 for singlenode -> if clustersize=3 2 additional from /etc/hosts
 	NODESCONNECTED=$(grep napp-k8s-node /etc/hosts |wc -l)
-	echo -e "\e[92m $NODESCONNECTED of $NODENUM nodes already connected\e[37m"
+	echo -e "\e[92m $NODESCONNECTED of $CLUSTERSIZE nodes already connected\e[37m"
 
-	while [[ $NODESCONNECTED -ne $NODENUM ]]; do
-	        echo -e "$(date)\e[92m $NODESCONNECTED of $NODENUM worker nodes already connected. retry in 60sec \e[37m"
+	while [[ $NODESCONNECTED -ne $CLUSTERSIZE ]]; do
+	        echo -e "$(date)\e[92m $NODESCONNECTED of $CLUSTERSIZE worker nodes already connected. retry in 60sec \e[37m"
 	        sleep 60s
 	        NODESCONNECTED=$(grep napp-k8s-node /etc/hosts |wc -l)
 	done
@@ -242,7 +242,7 @@ set -e
   	
 	# ping test all nodes, continue if successful
 	echo -e "\e[92mChecking if if nodes are online (re-try every 60s)\e[37m"
-        ALLONLINE=$NODENUM
+        ALLONLINE=$CLUSTERSIZE
         while [[ $ALLONLINE -ne 0 ]]; do
                 ALLONLINE=0
                 echo -n "$(date) Ping node(s): "
@@ -272,7 +272,7 @@ set -e
 
         # check for /nappinstall/READY_BASE on all nodes, continue if successful
 	echo -e "\e[92mChecking if if node(s) finished base setup (re-try every 60s)\e[37m"
-        ALLONLINE=$NODENUM
+        ALLONLINE=$CLUSTERSIZE
         while [[ $ALLONLINE -ne 0 ]]; do
                 ALLONLINE=0
                 echo -n "$(date) Base Setup ready? "
@@ -331,7 +331,7 @@ set -e
 	echo -e "\e[92mChecking if node(s) have finished loading NSX base images. This may take >60min\e[37m"
 	echo -e "\e[92mretry every 5min\e[37m"
 
-	ALLONLINE=$NODENUM
+	ALLONLINE=$CLUSTERSIZE
         while [[ $ALLONLINE -ne 0 ]]; do
                 ALLONLINE=0
                 echo -n "$(date) NSX base IMAGE ready? "
