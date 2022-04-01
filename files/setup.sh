@@ -354,7 +354,6 @@ set -e
 
 	# re-mount docker / kubelet datadir to data disk
 	echo -e "\e[92mre-mount Docker / Kubelet storage\e[37m"
-	#docker rm -f $(docker ps -aq); docker rmi -f $(docker images -q)
 	systemctl stop docker
 	rm -rf /var/lib/docker
 	rm -rf /var/lib/kubelet
@@ -364,24 +363,49 @@ set -e
 
 	mkdir /nfs/docker
 	mkdir /nfs/kubelet
-	#mount --rbind /nfs/docker/ /var/lib/docker
-	#mount --rbind /nfs/kubelet/ /var/lib/kubelet
 	
         echo '/nfs/docker     /var/lib/docker  none  defaults,rbind    0   0' | tee -a /etc/fstab
         echo '/nfs/kubelet    /var/lib/kubelet none  defaults,rbind    0   0' | tee -a /etc/fstab
 	mount /nfs/docker
 	mount /nfs/kubelet
-
 	
 	systemctl start docker
 	systemctl restart kubelet
+	
 
-	echo -e "\e[92mCreating NFS SERVER\e[37m"
-	mkdir -p /nfs/k8s
-	echo '/nfs/k8s        *(rw,sync,no_root_squash,no_subtree_check)' | tee -a /etc/exports
-	chown nobody:nogroup /nfs/k8s
-	systemctl enable nfs-server.service	
-	systemctl start nfs-server.service
+	# on node 1 setup nfs server
+	# on node2/3 create /etc/hosts entry on master (as master cannot know your IP)
+	if [ ${NODENUM} == 1 ]; then
+	    echo -e "\e[92mCreating NFS SERVER\e[37m"
+    	    mkdir -p /nfs/k8s
+	    echo '/nfs/k8s        *(rw,sync,no_root_squash,no_subtree_check)' | tee -a /etc/exports
+	    chown nobody:nogroup /nfs/k8s
+	    systemctl enable nfs-server.service
+	    systemctl start nfs-server.service
+	else
+		# check if master is ready 
+		set +e
+		echo -e "\e[92mChecking if master is online (ping every 30sec) $MASTER_IP_ADDRESS \e[37m"
+
+		COUNT=1
+		while [[ $COUNT -eq 1 ]]; do
+        		ping -c 1 $MASTER_IP_ADDRESS &>/dev/null
+		        rc=$?
+    			    if [[ $rc -eq 0 ]]; then
+	        	        COUNT=0
+		    	    else
+		                COUNT=1
+				echo -e "\e[92mNO answer from $MASTER_IP_ADDRESS. retry in 30sec \e[37m"
+		    	    fi
+		#wait 30s even if successful
+		sleep 30s
+		done
+		echo -e "\e[92mGot response from master. Creating entry $NODE_IP_ADDRESS napp-k8s-node$NODENUM in master /etc/hosts\e[37m"
+
+		export SSHPASS=${ROOT_PASSWORD}
+		sshpass -e ssh root@$MASTER_IP_ADDRESS "echo '${NODE_IP_ADDRESS} napp-k8s-node${NODENUM}' >>/etc/hosts"
+		set -e
+	fi
 
         #if localcache exists try to download kubernetes packages
         if ! [ -z "${LOCALCACHE}" ]; then
