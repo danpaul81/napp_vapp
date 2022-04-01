@@ -65,7 +65,7 @@ else
 	HOSTNAME="napp-k8s-node$NODENUM"
     fi
 
-    echo "${NODE_IP_ADDRESS} napp-k8s-node" >> /etc/hosts
+    echo "${NODE_IP_ADDRESS} napp-k8s-node1" >> /etc/hosts
     echo "${MASTER_IP_ADDRESS} napp-k8s-master" >> /etc/hosts
     hostnamectl set-hostname ${HOSTNAME}
 
@@ -224,6 +224,39 @@ set -e
 	#using local copy for deployment as online version refers to dockerhub (download quota...)
 	kubectl apply -f /nappinstall/metallb.yaml
 	kubectl apply -f /nappinstall/metallb-configmap.yaml
+
+
+	# collect ip of all nodes   -> 1 for singlenode -> if clustersize=3 2 additional from /etc/hosts
+	NODESCONNECTED=$(grep napp-k8s-node /etc/hosts |wc -l)
+	echo -e "\e[92m $NODESCONNECTED of $NODENUM nodes already connected\e[37m"
+
+	while [[ $NODESCONNECTED -ne $NODENUM ]]; do
+	        echo -e "$(date)\e[92m $NODESCONNECTED of $NODENUM worker nodes already connected. retry in 60sec \e[37m"
+	        sleep 60s
+	        NODESCONNECTED=$(grep napp-k8s-node /etc/hosts |wc -l)
+	done
+	
+	NODEIPS=$(grep napp-k8s-node /etc/hosts | cut -d' ' -f1)
+
+	for IP in ${NODEIPS[*]}; do
+	        echo "dieseip $IP"
+	done
+
+
+	# ping check all nodes
+
+	# if ready
+	# copy ssh key to all nodes
+
+	# check base readyness for all nodes
+	
+	# if ready
+	# preload images if needed for all nodes
+	# join cluster for all nodes
+	
+	# wait for "ready_base_images" for all nodes
+
+	#deploy nsx   -> evaluation for 1 node , advanced for 3 node
 
 
 	# check if node1 is ready 
