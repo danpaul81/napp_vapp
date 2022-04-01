@@ -1,5 +1,5 @@
 {
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "NSX 3.2 Application Platform vApp",
   "vm_name": "NAPP-Appliance",
   "iso_checksum": "md5:2bb1f61d6809835a9562767d947612c4",
