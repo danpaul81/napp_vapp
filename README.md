@@ -1,8 +1,5 @@
 # VAPP / OVA Images including all infrastructure needed to deploy NSX 3.2 Application Platform
 
-## This documentation is not yet finished. please refer to existing internal word doc
-## Introduction 
-
 This guide takes you through the process of deploying the NSX Application Platform. 
 Depending on the infrastructure where you'll run NSX Application Platform we decided to have a vAPP with all VMs inside for vCenter and a second solution for vCLoud Director (vCD) deployment. 
 
@@ -16,7 +13,7 @@ The Load Balancer IPs (VIP Pool) must be within the same subnet where master and
 
 ## Prerequisites 
 
-Folowing prerequisites are needed 
+Following prerequisites are needed 
 
 * NSX Manager 3.2 
 
@@ -112,6 +109,23 @@ Within the settings of each newly deployed VM disable Guest OS Customization and
 After moving VMs into your existing vAPP you can delete the two newly created VAPPS.
 Then just start both VMs (startup order doesn’t matter) 
 
+## Setting Up 3-worker node cluster (needed for NSX Application Platform Advanced)
+To setup a 3-worker node cluster refer to the documentation above, but choose "cluster size = 3" when deploying master node. 
+When deploying the VAPP to vCenter the first worker node will be setup automatically. 
+
+Then deploy 2 additional worker nodes using the NAPP-Appliance_xxx_node_app.ova (or 3 additional worker nodes when deployment of master node was done by using the NAPP-Appliance_xxx_master_app.ova)
+
+Each worker node needs an IP address within the same subnet as the master node / vip range. 
+
+Each worker node must be set up using the same root password as the master node.
+
+When deploying additional worker nodes specify the correct node number for each node (first node = 1, second node = 2, third node= 3)
+
+You can deploy and start master & worker node vms in any order
+
+During first startup master VM will wait for worker VMs to get ready - setup will finish automatically after all worker nodes are up and running
+
+
 ## Troubleshooting
 
 ### Initial VAPP Deployment Failure
@@ -156,9 +170,6 @@ You may find there entries for projectcontour or nsxi-platform that should be de
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/apiservices.png?raw=true)
   
 kubectl delete APIService v1beta1.metrics.k8s.io v1alpha1.projectcontour.io
-
-## VAPP / OVA Images to deploy NSX 3.2 Application Platform. See internal MS Teams Documentation
-more documentation to be added here
 
 ### Image creation scripts based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
 
