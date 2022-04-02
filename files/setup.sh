@@ -228,10 +228,10 @@ set -e
 
 	# collect ip of all nodes   -> 1 for singlenode -> if clustersize=3 2 additional from /etc/hosts
 	NODESCONNECTED=$(grep napp-k8s-node /etc/hosts |wc -l)
-	echo -e "\e[92m $NODESCONNECTED of $CLUSTERSIZE nodes already connected\e[37m"
+	echo -e "\e[92m $NODESCONNECTED of $CLUSTERSIZE nodes already registered\e[37m"
 
 	while [[ $NODESCONNECTED -ne $CLUSTERSIZE ]]; do
-	        echo -e "$(date)\e[92m $NODESCONNECTED of $CLUSTERSIZE worker nodes already connected. retry in 60sec \e[37m"
+	        echo -e "$(date)\e[92m $NODESCONNECTED of $CLUSTERSIZE worker nodes already registered. retry in 60sec \e[37m"
 	        sleep 60s
 	        NODESCONNECTED=$(grep napp-k8s-node /etc/hosts |wc -l)
 	done

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #session ID on VCD
-SESSIONID=
+SESSIONID=762dc6b821ec4be6aba044904217a826
 
 
 
@@ -36,5 +36,5 @@ COMMONOPTS='--noSSLVerify --diskMode=thin
 --prop:guestinfo.localcache=10.124.48.61
 --prop:guestinfo.podnet=172.25.0.0/16'
 
-ovftool --I:targetSessionTicket=$SESSIONID $COMMONOPTS --prop:guestinfo.clustersize=3--prop:guestinfo.role=master $SOURCE_MASTER $TARGET_MASTER
+ovftool --I:targetSessionTicket=$SESSIONID $COMMONOPTS --prop:guestinfo.clustersize=3 --prop:guestinfo.role=master $SOURCE_MASTER $TARGET_MASTER
 ovftool --I:targetSessionTicket=$SESSIONID $COMMONOPTS --prop:guestinfo.role=node   $SOURCE_NODE   $TARGET_NODE

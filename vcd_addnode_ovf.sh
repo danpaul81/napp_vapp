@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #session ID on VCD
-SESSIONID=
+SESSIONID=762dc6b821ec4be6aba044904217a826
 
 
 
@@ -17,7 +17,7 @@ TARGET_NODE='vcloud://ams2-vcd01.oc.vmware.com/cloud?org=ams2-vcd01-emea-sddc-lt
 #review and corect. dont use simple root password as deployment might fail
 COMMONOPTS='--noSSLVerify --diskMode=thin 
 --prop:guestinfo.master_ip=192.168.110.210  
---prop:guestinfo.node_ip=192.168.110.212
+--prop:guestinfo.node_ip=192.168.110.213
 --prop:guestinfo.netmask=24 
 --prop:guestinfo.gateway=192.168.110.1  
 --prop:guestinfo.dns=192.168.110.10
@@ -25,7 +25,7 @@ COMMONOPTS='--noSSLVerify --diskMode=thin
 --prop:guestinfo.ntp=192.168.110.10
 --prop:guestinfo.root_password=daniel1
 --prop:guestinfo.preload=True 
---prop:guestinfo.nodenum=2
+--prop:guestinfo.nodenum=3
 --prop:guestinfo.localcache=10.124.48.61'
 
-ovftool --I:targetSessionTicket=$SESSIONID $COMMONOPTS --prop:guestinfo.role=node   $SOURCE_NODE   $TARGET_NODE
+ovftool --I:targetSessionTicket=$SESSIONID $COMMONOPTS --prop:guestinfo.role=node $SOURCE_NODE   $TARGET_NODE
