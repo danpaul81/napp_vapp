@@ -40,8 +40,8 @@
           <Description>IP Address for k8s master node</Description>
         </Property>
         <Property ovf:userConfigurable="true" ovf:value="172.16.10.111" ovf:type="string" ovf:key="guestinfo.node_ip">
-          <Label>Node IP</Label>
-          <Description>IP Address for k8s node</Description>
+          <Label>First Node IP</Label>
+          <Description>IP Address of first k8s node</Description>
         </Property>
         <Property ovf:userConfigurable="true" ovf:value="172.16.10.200-172.16.10.205" ovf:type="string" ovf:key="guestinfo.vip_pool">
           <Label>VIP Pool</Label>
