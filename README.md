@@ -5,6 +5,20 @@ Depending on the infrastructure where you'll run NSX Application Platform we dec
 
 This release is for evaluation only, but later we may add some features to make it production ready.
 
+### Table of Contents
+**[Overview](#overview)**<br>
+**[Prerequsites](#prerequisites)**<br>
+**[Setup NAPP vAPP in vCenter](#setup-napp-vapp-in-vcenter)**<br>
+**[- Install vAPP](#install-vapp)**<br>
+**[- Start vAPP](#start-vapp)**<br>
+**[ - Watch the Setup Process](#watch-the-setup-process)**<br>
+**[Setup NAPP APP in vCLoud Director aka OneCloud](#setup-napp-app-in-vcloud-director-aka-onecloud)**<br>
+**[Setting Up 3-worker node cluster for NSX Application Platform Advanced](#setting-up-3-worker-node-cluster-for-nsx-application-platform-advanced)**<br>
+**[Troubleshooting](#troubleshooting)**<br>
+
+
+
+## Overview
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/architecture.png?raw=true)
 
 The vAPP will deploy the Blue boxes on the right side and they can be in the same network like DNS and NSX Manager, but they can also be in a different Network like in the picture above. 
@@ -35,9 +49,9 @@ vSphere DRS must be enabled in the Cluster where you want to deply NAPP even if 
 
 * NAPP_VAPP can be deployed in a VLAN based DVPG or NSX VLAN/Overlay Segment. Default Gateway, DNS must work and internet connection must be possible.  
 
-## Setup NSX vAPP in vCenter 
+## Setup NAPP vAPP in vCenter 
 
-After you have downloaded the vAPP OVA from [releases] (https://github.com/danpaul81/napp_vapp/releases/) 
+Download vAPP OVA from [releases](https://github.com/danpaul81/napp_vapp/releases/) 
 
 ### Install vAPP 
 
@@ -51,7 +65,7 @@ We recognized some Issues while deploying if the Internet Connection is slow. So
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/customize_preload.png?raw=true)
 
 In adittion we improved the deployment time with a local cache option. We loaded all Files on a Server in the OneCloud and if you insert an IP in the new Field Localcache IP the Nodes will try to download there the images first before they try to download from the public Harbor registry.
-### The IP is: 10.124.48.62
+#### within the vmware corporate network the IP is: 10.124.48.62
 
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/localcache.png?raw=true)
 
@@ -59,7 +73,7 @@ In adittion we improved the deployment time with a local cache option. We loaded
 
 Just start the overall vapp – both VMs will do their own setup steps in parallel. Depending on speed of your internet connection this can take some hours! 
 
-### Watching the Process 
+### Watch the setup Process 
 
 All steps will be printed on the console from the Master and the Node and you can check the process there. 
 The Logfiles will be stored in /var/log/photon-customization.log 
@@ -100,30 +114,32 @@ You should press the Retry  Buttun in NSX Manager and if it is still not working
 
 If this does not help you should check if you can deploy the vAPP in a more performant environment. If the Environment is nested it will also fail and you should proceed with the Single VMs vAPP for vCLOUD Director.
 
-## Setup NSX vAPP in vCLoud Director aka OneCloud
-To deploy in vCloud director import  NAPP_Appliance_*_master_app.ova and NAPP_Appliance_*_node_app.ova each as separate vAPP. 
-The actual release and MD5 hashes can be found here: (https://github.com/danpaul81/napp_vapp/releases/)
+## Setup NAPP APP in vCloud Director aka OneCloud
+As vCloud Director seems to have some issues with the vAPP we created single node ova images for master and node VMs
+To deploy in vCloud director [download](https://github.com/danpaul81/napp_vapp/releases/) and import  NAPP_Appliance_*_master_app.ova and NAPP_Appliance_*_node_app.ova each as separate vAPP. 
 
 Both need to be deployed with identical options except the “role”. This must be set “master” for master VM and “node” for node VM. 
-Within the settings of each newly deployed VM disable Guest OS Customization and then move the VM into you vAPP. In network settings choose fitting network and IP Mode DHCP. 
+After deployment move the VMs into your exisiting vAPP (the one already running NSX Manager). In network settings choose fitting network and IP Mode DHCP. 
 After moving VMs into your existing vAPP you can delete the two newly created VAPPS.
 Then just start both VMs (startup order doesn’t matter) 
 
-## Setting Up 3-worker node cluster (needed for NSX Application Platform Advanced)
-To setup a 3-worker node cluster refer to the documentation above, but choose "cluster size = 3" when deploying master node. 
-When deploying the VAPP to vCenter the first worker node will be setup automatically. 
+## Setting Up 3-worker node cluster for NSX Application Platform Advanced
+To setup a 3-worker node cluster refer to the documentations above, but choose "cluster size = 3" when deploying master node. 
 
-Then deploy 2 additional worker nodes using the NAPP-Appliance_xxx_node_app.ova (or 3 additional worker nodes when deployment of master node was done by using the NAPP-Appliance_xxx_master_app.ova)
+When deploying the vAPP to vCenter the first worker node will be setup automatically, then use the NAPP-Appliance_xxx_node_app.ova images to add two additional node VMs.
 
-Each worker node needs an IP address within the same subnet as the master node / vip range. 
+When deploying single master/node OVAs to vCloudDirector start with master (and enter IP of first node vm), then continue with 3 node VMs (ensure to select correct node numer and IP for each node)
 
-Each worker node must be set up using the same root password as the master node.
+#### Important Notes
+  * Each worker node needs an IP address within the same subnet as the master node / vip range. 
 
-When deploying additional worker nodes specify the correct node number for each node (first node = 1, second node = 2, third node= 3)
+  * Each worker node must be set up using the same root password as the master node.
 
-You can deploy and start master & worker node vms in any order
+  * When deploying additional worker nodes specify the correct node number for each node (first node = 1, second node = 2, third node= 3)
 
-During first startup master VM will wait for worker VMs to get ready - setup will finish automatically after all worker nodes are up and running
+  * You can deploy and start master & worker node vms in any order
+
+  * During first startup master VM will wait for worker VMs to get ready - setup will finish automatically after all worker nodes are up and running
 
 
 ## Troubleshooting
@@ -170,6 +186,7 @@ You may find there entries for projectcontour or nsxi-platform that should be de
 ![alt text](https://github.com/danpaul81/napp_vapp/blob/main/images/apiservices.png?raw=true)
   
 kubectl delete APIService v1beta1.metrics.k8s.io v1alpha1.projectcontour.io
+<br><br>
 
 ### Image creation scripts based on Reference for building PhotonOS Virtual Appliance (OVA) using Packer
 
