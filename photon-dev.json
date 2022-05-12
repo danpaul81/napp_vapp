@@ -32,6 +32,7 @@
       "vm_name": "{{ user `vm_name` }}",
       "guest_os_type": "vmwarePhoton64Guest",
       "vm_version": "14",
+      "disk_controller_type": "pvscsi",
       "storage": [
        {
          "disk_size": "{{ user `disksize`}}",
